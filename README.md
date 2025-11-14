@@ -2,21 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Undertale Cards</title>
+  <title>Undertale Card Game</title>
   <style>
     body {
       background: black;
       font-family: 'Courier New', monospace;
       color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      text-align: center;
     }
 
-    .card-container {
+    .game-area {
       display: flex;
-      gap: 20px;
+      justify-content: space-around;
+      margin-top: 40px;
     }
 
     .card {
@@ -24,22 +22,13 @@
       border: 4px solid white;
       padding: 20px;
       width: 200px;
-      text-align: center;
       box-shadow: 0 0 10px white;
-      transition: transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #ff0000;
-      border-color: #ff0000;
     }
 
     .card img {
       width: 100px;
       height: 100px;
-      image-rendering: pixelated; /* retro pixel look */
+      image-rendering: pixelated;
     }
 
     .card-title {
@@ -48,32 +37,80 @@
       text-transform: uppercase;
     }
 
-    .card-desc {
+    .stats {
+      margin-top: 10px;
       font-size: 14px;
-      margin-top: 5px;
       color: #ccc;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-family: inherit;
+      background: #222;
+      color: white;
+      border: 2px solid white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ff0000;
+      border-color: #ff0000;
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 20px;
+      color: #ff0000;
     }
   </style>
 </head>
 <body>
-  <div class="card-container">
-    <div class="card">
-      <img src="https://placekitten.com/100/100" alt="Character">
-      <div class="card-title">Sans</div>
-      <div class="card-desc">Lazy skeleton with bad puns.</div>
-    </div>
-
-    <div class="card">
-      <img src="https://placebear.com/100/100" alt="Character">
-      <div class="card-title">Papyrus</div>
-      <div class="card-desc">Energetic skeleton who loves spaghetti.</div>
-    </div>
-
-    <div class="card">
-      <img src="https://placebeard.it/100x100" alt="Character">
-      <div class="card-title">Flowey</div>
-      <div class="card-desc">A flower with a sinister smile.</div>
-    </div>
+  <h1>Undertale Card Battle</h1>
+  <div class="game-area">
+    <div id="player-card" class="card"></div>
+    <div id="enemy-card" class="card"></div>
   </div>
+  <button onclick="playRound()">Draw Cards</button>
+  <div id="result"></div>
+
+  <script>
+    const deck = [
+      { name: "Sans", img: "https://placekitten.com/100/100", atk: 7, def: 5 },
+      { name: "Papyrus", img: "https://placebear.com/100/100", atk: 5, def: 8 },
+      { name: "Flowey", img: "https://placebeard.it/100x100", atk: 9, def: 3 },
+      { name: "Toriel", img: "https://placekitten.com/101/101", atk: 6, def: 7 },
+      { name: "Undyne", img: "https://placebear.com/101/101", atk: 8, def: 6 }
+    ];
+
+    function drawCard() {
+      return deck[Math.floor(Math.random() * deck.length)];
+    }
+
+    function renderCard(card, elementId) {
+      document.getElementById(elementId).innerHTML = `
+        <img src="${card.img}" alt="${card.name}">
+        <div class="card-title">${card.name}</div>
+        <div class="stats">ATK: ${card.atk} | DEF: ${card.def}</div>
+      `;
+    }
+
+    function playRound() {
+      const player = drawCard();
+      const enemy = drawCard();
+      renderCard(player, "player-card");
+      renderCard(enemy, "enemy-card");
+
+      let resultText = "";
+      if (player.atk > enemy.def) {
+        resultText = `${player.name} wins the round!`;
+      } else if (enemy.atk > player.def) {
+        resultText = `${enemy.name} wins the round!`;
+      } else {
+        resultText = "It's a tie!";
+      }
+      document.getElementById("result").textContent = resultText;
+    }
+  </script>
 </body>
 </html>
