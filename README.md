@@ -154,12 +154,12 @@
 
 <script>
 (function(){
-  // Safe crypto UUID fallback
+  // Safe uuid
   function uuid(){
-    const c = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : ('xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(ch){
+    const rnd = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : ('xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(ch){
       const r = Math.random()*16|0, v = ch==='x'?r:(r&0x3|0x8); return v.toString(16);
     }));
-    return c;
+    return rnd;
   }
 
   // Persistent progression
