@@ -2,34 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Undertale Card Duel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Undertale Card Duel — Battlebox Edition</title>
 <style>
   :root{
     --bg1:#0b1020; --bg2:#121a35; --panel:#0f172a; --border:#1f2937; --muted:#94a3b8; --text:#e5e7eb;
     --green:#22c55e; --blue:#3b82f6; --gold:#f59e0b; --red:#ef4444; --gray:#334155; --accent:#a78bfa;
     --rainbow: linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#3b82f6,#a78bfa);
   }
+  *{ box-sizing:border-box; }
   body{ margin:0; font-family:system-ui, Arial, sans-serif; background:linear-gradient(180deg,var(--bg1),var(--bg2)); color:var(--text); }
-  header{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); }
-  .title{ font-weight:800; letter-spacing:0.6px; }
-  .controls{ display:flex; gap:8px; align-items:center; }
-  select,button{ background:#182238; color:var(--text); border:1px solid var(--gray); padding:8px 10px; border-radius:8px; }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; background:linear-gradient(180deg,#0b1020,#121a35); z-index:3; }
+  .title{ font-weight:800; letter-spacing:0.6px; font-size:clamp(16px,3vw,20px); }
+  .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  button{ background:#182238; color:var(--text); border:1px solid var(--gray); padding:10px 12px; border-radius:10px; font-size:clamp(12px,2.8vw,14px); }
+  button:active{ transform:scale(0.98); }
   button:hover{ background:#22304c; }
-  main{ display:grid; grid-template-columns: 1fr 360px; gap:12px; padding:12px; }
+  .badge{ display:inline-block; padding:6px 10px; border:1px solid var(--gray); border-radius:999px; background:#111827; color:#cbd5e1; font-size:clamp(12px,2.8vw,13px); }
+  main{ display:grid; grid-template-columns: 1fr 380px; gap:12px; padding:12px; }
+  @media (max-width: 880px){
+    main{ grid-template-columns: 1fr; }
+    aside.panel{ order: -1; }
+  }
+
   .board{ display:grid; gap:12px; }
   .hand{ display:flex; flex-wrap:wrap; gap:10px; min-height:160px; padding:10px; border:1px solid var(--border); border-radius:12px; background:var(--panel); }
-  .pile-area{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  .deck{ width:110px; height:150px; border-radius:12px; background:#111827; border:2px solid var(--gray); display:flex; align-items:center; justify-content:center; color:var(--muted); }
+  .hand h3{ margin:0 0 8px 0; font-size:clamp(14px,3vw,16px); }
+  .pile-area{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .deck{ min-width:110px; height:150px; border-radius:12px; background:#111827; border:2px solid var(--gray); display:flex; align-items:center; justify-content:center; color:var(--muted); }
+  .tip{ color:#cbd5e1; font-size:clamp(12px,2.8vw,13px); }
+
   .card{
-    width:96px; height:140px; border-radius:12px; background:#0b1224; border:2px solid var(--gray); color:var(--text);
+    width:clamp(92px,24vw,120px); height:clamp(132px,36vw,160px);
+    border-radius:12px; background:#0b1224; border:2px solid var(--gray); color:var(--text);
     display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:8px; user-select:none; position:relative;
     transition:transform 120ms ease, box-shadow 120ms ease;
   }
-  .card .name{ font-size:13px; text-align:center; font-weight:700; }
-  .card .desc{ font-size:11px; color:#cbd5e1; text-align:center; min-height:32px; }
-  .tag{ position:absolute; top:6px; left:6px; font-size:11px; padding:2px 6px; border-radius:999px; border:1px solid var(--gray); background:#111827; color:#cbd5e1; }
-  .cost{ position:absolute; bottom:6px; right:6px; font-size:11px; padding:2px 6px; border-radius:999px; border:1px solid var(--gray); background:#111827; color:#cbd5e1; }
+  .card .name{ font-size:clamp(12px,3vw,13px); text-align:center; font-weight:700; }
+  .card .desc{ font-size:clamp(10px,2.8vw,11px); color:#cbd5e1; text-align:center; min-height:32px; }
+  .tag{ position:absolute; top:6px; left:6px; font-size:clamp(10px,2.6vw,11px); padding:2px 6px; border-radius:999px; border:1px solid var(--gray); background:#111827; color:#cbd5e1; }
+  .cost{ position:absolute; bottom:6px; right:6px; font-size:clamp(10px,2.6vw,11px); padding:2px 6px; border-radius:999px; border:1px solid var(--gray); background:#111827; color:#cbd5e1; }
   .items{ border-color: var(--green); box-shadow:0 0 0 2px #166534 inset; }
   .options{ border-color: var(--gold); box-shadow:0 0 0 2px #78350f inset; }
   .magic{ border-color: var(--blue); box-shadow:0 0 0 2px #1e3a8a inset; }
@@ -40,31 +52,51 @@
 
   aside.panel{ border-left:1px solid var(--border); padding-left:12px; }
   .char{ background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; }
-  .char h3{ margin:0 0 6px 0; font-size:16px; }
+  .char h3{ margin:0 0 6px 0; font-size:clamp(16px,3.4vw,18px); }
   .bar{ height:16px; background:#0b1224; border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:6px 0 8px 0; }
   .hp{ background:linear-gradient(90deg,#ef4444,#f87171); }
   .st{ background:linear-gradient(90deg,#22c55e,#86efac); }
-  .row{ display:flex; gap:8px; align-items:center; font-size:13px; color:var(--muted); }
-  .badge{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid var(--gray); background:#111827; color:#cbd5e1; }
-  .log{ background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px; height:220px; overflow:auto; font-size:13px; }
-  .tip{ color:#cbd5e1; font-size:13px; }
-  .footer{ display:flex; align-items:center; gap:8px; color:#cbd5e1; font-size:13px; }
-  .pill{ padding:2px 8px; border:1px solid var(--gray); border-radius:999px; background:#111827; }
+  .row{ display:flex; gap:8px; align-items:center; font-size:clamp(12px,2.8vw,13px); color:var(--muted); flex-wrap:wrap; }
+  .log{ background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px; height:240px; overflow:auto; font-size:clamp(12px,2.8vw,13px); }
+  .footer{ display:flex; align-items:center; gap:8px; color:#cbd5e1; font-size:clamp(12px,2.8vw,13px); flex-wrap:wrap; }
+
+  /* Battlebox overlay */
+  .overlay{
+    position:fixed; inset:0; background:#0009; display:none; align-items:center; justify-content:center; z-index:10;
+    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  }
+  .battlebox{
+    width:clamp(280px, 80vw, 560px);
+    height:clamp(200px, 60vh, 420px);
+    background:#000; border:3px solid #fff; position:relative; overflow:hidden; border-radius:12px;
+  }
+  .soul{
+    position:absolute; width:18px; height:18px; background:#ff0000; border-radius:4px; box-shadow:0 0 8px 2px #ff6b6b;
+  }
+  .proj{ position:absolute; background:#cccccc; }
+  .beam{ position:absolute; background:#a7f3d0; opacity:0.9; }
+  .hud{
+    position:absolute; left:8px; top:8px; z-index:2; color:#fff; font-size:clamp(12px,3vw,14px); display:flex; gap:8px;
+    background:#0008; padding:6px 8px; border-radius:8px; border:1px solid #fff3;
+  }
+  .mobile-controls{
+    display:none; position:absolute; right:8px; bottom:8px; z-index:2; gap:8px;
+  }
+  .mobile-controls button{
+    width:56px; height:56px; border-radius:50%; background:#182238; border:1px solid var(--gray); color:#fff; font-weight:800;
+  }
+  @media (pointer:coarse){
+    .mobile-controls{ display:flex; }
+  }
 </style>
 </head>
 <body>
 <header>
-  <div class="title">Undertale Card Duel</div>
+  <div class="title">Undertale Card Duel — Battlebox</div>
   <div class="controls">
-    <label>Route:</label>
-    <select id="routeSelect">
-      <option value="NEUTRAL">NEUTRAL</option>
-      <option value="PACIFIST">PACIFIST</option>
-      <option value="TRUE_PACIFIST">TRUE PACIFIST</option>
-      <option value="GENOCIDE">GENOCIDE</option>
-    </select>
     <button id="newMatchBtn">New match</button>
     <span class="badge" id="turnBadge">Your turn</span>
+    <span class="badge" id="loveBadge">LOVE: 1 (EXP 0)</span>
   </div>
 </header>
 
@@ -72,9 +104,7 @@
   <section class="board">
     <div class="pile-area" id="pileArea">
       <div class="deck" id="drawDeck">Draw</div>
-      <div class="footer">
-        <span class="tip">Drag a glowing card to the board to play. Double-click works too.</span>
-      </div>
+      <span class="tip">Drag a glowing card to the board to play. Double-tap works on mobile.</span>
     </div>
 
     <div>
@@ -98,8 +128,7 @@
       <div class="row"><span class="badge">Stamina:</span> <span id="playerSTText">0/0</span></div>
       <div class="row"><span class="badge">ATK/DEF:</span> <span id="playerStatsText">0 / 0</span></div>
       <div class="row"><span class="badge">Weapon:</span> <span id="playerWeaponText">Stick (1 atk)</span></div>
-      <div class="row"><span class="badge">LOVE/EXP:</span> <span id="playerLoveText">LV 1 / 0 EXP</span></div>
-      <div class="row"><span class="badge">Route:</span> <span id="playerRouteText">NEUTRAL</span></div>
+      <div class="row"><span class="badge">Route-like:</span> <span id="routeText">PACIFIST-ish</span></div>
     </div>
 
     <div class="char" id="opponentPanel">
@@ -109,821 +138,815 @@
       <div class="row"><span class="badge">HP:</span> <span id="opponentHPText">1/1</span></div>
       <div class="bar"><div class="st" id="opponentSTBar" style="width:100%"></div></div>
       <div class="row"><span class="badge">Stamina:</span> <span id="opponentSTText">100/100</span></div>
-      <div class="row"><span class="badge">Passive:</span> <span>Dodges attacks while stamina ≥ 10 (cost 10 per attack instance). +2 stamina each turn.</span></div>
+      <div class="row"><span class="badge">Passive:</span> <span>Dodges non-FIGHT attacks at 10 ST each instance. +2 ST each turn.</span></div>
     </div>
 
     <div class="log" id="log"></div>
   </aside>
 </main>
 
+<!-- Battlebox overlay -->
+<div class="overlay" id="overlay">
+  <div class="battlebox" id="battlebox">
+    <div class="hud"><span id="bbInfo">Bone Throw</span><span id="bbTimer">3.0s</span></div>
+    <div class="mobile-controls">
+      <button data-dir="up">↑</button>
+      <button data-dir="left">←</button>
+      <button data-dir="down">↓</button>
+      <button data-dir="right">→</button>
+    </div>
+    <div class="soul" id="soul"></div>
+  </div>
+</div>
+
 <script>
 (function(){
-  // Persistent progression (localStorage)
-  const SAVE_KEY = "undertale_card_progress";
-  const defaultProgress = { love:1, exp:0 };
+  // Persistent progression
+  const SAVE_KEY = "undertale_card_progress_v2";
+  const defaultProgress = { love:1, exp:0, spared:0 };
   const progress = loadProgress();
 
-  const ROUTES = ["NEUTRAL","PACIFIST","TRUE_PACIFIST","GENOCIDE"];
-  const CATEGORY = { ITEMS:"ITEMS", OPTIONS:"OPTIONS", MAGIC:"MAGIC" };
-
-  // LOVE table
+  // LOVE mapping to stats
   const LOVE_TABLE = [
-    { lv:1, total:0, next:10, hp:20, atk:0, def:0, weapon:"Stick (1 atk)" },
-    { lv:2, total:10, next:20, hp:24, atk:2, def:0 },
-    { lv:3, total:30, next:40, hp:28, atk:4, def:0 },
-    { lv:4, total:70, next:50, hp:32, atk:6, def:1, weapon:"Toy Knife (4 atk)" },
-    { lv:5, total:120, next:80, hp:36, atk:8, def:1 },
-    { lv:6, total:200, next:100, hp:40, atk:10, def:1 },
-    { lv:7, total:300, next:200, hp:44, atk:12, def:1 },
-    { lv:8, total:500, next:300, hp:48, atk:14, def:2, weapon:"Tough Glove (5 atk)" },
-    { lv:9, total:800, next:400, hp:52, atk:16, def:2 },
-    { lv:10, total:1200, next:500, hp:56, atk:18, def:2 },
-    { lv:11, total:1700, next:800, hp:60, atk:20, def:2 },
-    { lv:12, total:2500, next:1000, hp:64, atk:22, def:3, weapon:"Ballet Shoes (7 atk)" },
-    { lv:13, total:3500, next:1500, hp:68, atk:24, def:3, weapon:"Torn Notebook (2 atk multi-hit)" },
-    { lv:14, total:5000, next:5000, hp:72, atk:26, def:3 },
-    { lv:15, total:10000, next:0, hp:76, atk:28, def:3, weapon:"Burnt Pan (10 atk)" },
-    { lv:16, total:10000, next:40000, hp:80, atk:30, def:4, weapon:"Empty Gun (12 atk)" },
-    { lv:17, total:50000, next:0, hp:84, atk:32, def:4 },
-    { lv:18, total:50000, next:0, hp:88, atk:34, def:4 },
-    { lv:19, total:50000, next:49999, hp:92, atk:38, def:4, weapon:"Worn Dagger (18 atk)" },
-    { lv:20, total:99999, next:null, hp:99, atk:99, def:99, weapon:"Real Knife (99 atk)" },
+    { lv:1, total:0, next:10, hp:20, atk:0, def:0, weapon:"Stick (1 atk)", route:"PACIFIST-ish" },
+    { lv:2, total:10, next:20, hp:24, atk:2, def:0, route:"NEUTRAL-ish" },
+    { lv:3, total:30, next:40, hp:28, atk:4, def:0, route:"NEUTRAL-ish" },
+    { lv:4, total:70, next:50, hp:32, atk:6, def:1, weapon:"Toy Knife (4 atk)", route:"NEUTRAL-ish" },
+    { lv:5, total:120, next:80, hp:36, atk:8, def:1, route:"NEUTRAL-ish" },
+    { lv:6, total:200, next:100, hp:40, atk:10, def:1, route:"NEUTRAL-ish" },
+    { lv:7, total:300, next:200, hp:44, atk:12, def:1, route:"NEUTRAL-ish" },
+    { lv:8, total:500, next:300, hp:48, atk:14, def:2, weapon:"Tough Glove (5 atk)", route:"NEUTRAL-ish" },
+    { lv:9, total:800, next:400, hp:52, atk:16, def:2, route:"NEUTRAL-ish" },
+    { lv:10, total:1200, next:500, hp:56, atk:18, def:2, route:"NEUTRAL-ish" },
+    { lv:11, total:1700, next:800, hp:60, atk:20, def:2, route:"NEUTRAL-ish" },
+    { lv:12, total:2500, next:1000, hp:64, atk:22, def:3, weapon:"Ballet Shoes (7 atk)", route:"NEUTRAL-ish" },
+    { lv:13, total:3500, next:1500, hp:68, atk:24, def:3, weapon:"Torn Notebook (2 atk multi-hit)", route:"NEUTRAL-ish" },
+    { lv:14, total:5000, next:5000, hp:72, atk:26, def:3, route:"NEUTRAL-ish" },
+    { lv:15, total:10000, next:0, hp:76, atk:28, def:3, weapon:"Burnt Pan (10 atk)", route:"NEUTRAL-ish" },
+    { lv:16, total:10000, next:40000, hp:80, atk:30, def:4, weapon:"Empty Gun (12 atk)", route:"NEUTRAL-ish" },
+    { lv:17, total:50000, next:0, hp:84, atk:32, def:4, route:"NEUTRAL-ish" },
+    { lv:18, total:50000, next:0, hp:88, atk:34, def:4, route:"NEUTRAL-ish (end)" },
+    { lv:19, total:50000, next:49999, hp:92, atk:38, def:4, weapon:"Worn Dagger (18 atk)", route:"GENOCIDE-ish" },
+    { lv:20, total:99999, next:null, hp:99, atk:99, def:99, weapon:"Real Knife (99 atk)", route:"GENOCIDE-max" },
   ];
 
-  // Match state
+  // Categories
+  const CAT = { ITEMS:"ITEMS", OPTIONS:"OPTIONS", MAGIC:"MAGIC" };
+
+  // State
   let state = {
-    route:"NEUTRAL",
-    playerRole:null, // "Frisk" or "Sans"
-    opponentRole:null,
+    playerRole:null, opponentRole:null,
     player:{ hp:20, maxHP:20, st:0, maxST:0, atk:0, def:0, love:1, exp:0, weapon:"Stick (1 atk)" },
     opponent:{ hp:1, maxHP:1, st:100, maxST:100, atk:0, def:0 },
-    deck:[],
-    playerHand:[],
-    opponentHand:[],
-    turn:"player",
-    locked:false,
-    flags:{
-      pieUsed:false,
-      snowmanPiecesUsed:0,
-      legendaryBias:false,
-      lostSoul:null, // { name, hp }
-    }
+    deck:{ player:[], opponent:[] },
+    playerHand:[], opponentHand:[],
+    turn:"player", locked:false,
+    flags:{ pieUsed:false, snowmanPiecesUsed:0 },
   };
 
-  // Cards definition helpers
-  const makeCard = (name, cat, owner, effect, desc, opts={})=>{
-    return {
-      id: crypto.randomUUID(),
-      name, cat, owner, effect, desc,
-      rarity: opts.rarity||null,
-      cost: opts.cost||0, // stamina cost (mostly for Sans on his own cards)
-      uses: opts.uses||null // for tracking limited uses in-hand (optional)
-    };
-  };
+  // Cards
+  const makeCard = (name, cat, owner, effect, desc, opts={})=>({
+    id: crypto.randomUUID(), name, cat, owner, effect, desc,
+    rarity: opts.rarity||null, cost: opts.cost||0
+  });
 
-  // Build decks by role and route
-  const buildDeck = ()=>{
-    const deck = [];
-    const route = state.route;
+  // Frisk pools
+  const friskItems = [
+    makeCard("Monster Candy", CAT.ITEMS, "Frisk", { heal:10 }, "+10 HP"),
+    makeCard("Spider Donut", CAT.ITEMS, "Frisk", { heal:12 }, "+12 HP"),
+    makeCard("Spider Cider", CAT.ITEMS, "Frisk", { heal:24 }, "+24 HP"),
+    makeCard("Butterscotch Pie", CAT.ITEMS, "Frisk", { healFull:true }, "Full heal (once per match)"),
+    makeCard("Snowman Piece", CAT.ITEMS, "Frisk", { heal:45 }, "+45 HP (max 4 per match)"),
+    makeCard("Instant Noodles", CAT.ITEMS, "Frisk", { heal:90 }, "+90 HP"),
+    makeCard("Legendary Hero", CAT.ITEMS, "Frisk", { heal:40, atkBuff:1 }, "+40 HP, slight ATK buff"),
+    makeCard("Astronaut Food", CAT.ITEMS, "Frisk", { heal:21 }, "+21 HP"),
+    makeCard("Hot Dog...?", CAT.ITEMS, "Frisk", { heal:20 }, "+20 HP"),
+  ];
+  const friskOptions = [
+    makeCard("FIGHT", CAT.OPTIONS, "Frisk", { fight:true }, "Attack with weapon+ATK"),
+    makeCard("ACT", CAT.OPTIONS, "Frisk", { act:true }, "Check/Flirt/Joke variations"),
+    makeCard("MERCY", CAT.OPTIONS, "Frisk", { mercy:true }, "Spare or Flee"),
+  ];
+  const friskTruePacifistOnly = [
+    makeCard("SAVE", CAT.OPTIONS, "Frisk", { save:true }, "Summon Lost Soul ally (4 HP)", { rarity:"rare" }),
+  ];
+
+  // Sans pools
+  const sansItems = [
+    makeCard("Hot Dog...?", CAT.ITEMS, "Sans", { heal:20, stGain:15 }, "+20 HP, +15 ST"),
+    makeCard("Hot Cat", CAT.ITEMS, "Sans", { heal:21, stGain:10 }, "+21 HP, +10 ST"),
+    makeCard("Ketchup", CAT.ITEMS, "Sans", { heal:8, stGain:25 }, "+8 HP, +25 ST"),
+    makeCard("Burger", CAT.ITEMS, "Sans", { heal:12, stGain:20 }, "+12 HP, +20 ST"),
+  ];
+  const sansOptions = [
+    makeCard("ACT (Nap)", CAT.OPTIONS, "Sans", { nap:true }, "Nap: skip 2–3 turns, then full heal"),
+    makeCard("MERCY", CAT.OPTIONS, "Sans", { mercy:true }, "Spare or Flee"),
+  ];
+  const sansMagic = [
+    makeCard("Bone Throw", CAT.MAGIC, "Sans", { pattern:"bones", duration:3000 }, "Dodge scattered bones"),
+    makeCard("Bone Jumps", CAT.MAGIC, "Sans", { pattern:"bars", duration:4000 }, "Dodge sweeping bars"),
+    makeCard("Gaster Blaster", CAT.MAGIC, "Sans", { pattern:"blasters", duration:5000 }, "Dodge beam bursts"),
+  ];
+
+  // Build decks influenced by LOVE
+  function buildDecks(){
+    const playerPool = [];
+    const opponentPool = [];
+
     const loveInfo = getLoveInfo(progress.love);
+    const loveLV = loveInfo.lv;
 
-    // Frisk cards
-    const friskItems = [
-      makeCard("Monster Candy", CATEGORY.ITEMS, "Frisk", { heal:10 }, "+10 HP"),
-      makeCard("Spider Donut", CATEGORY.ITEMS, "Frisk", { heal:12 }, "+12 HP"),
-      makeCard("Spider Cider", CATEGORY.ITEMS, "Frisk", { heal:24 }, "+24 HP"),
-      makeCard("Butterscotch Pie", CATEGORY.ITEMS, "Frisk", { healFull:true }, "Full heal (once per match)"),
-      makeCard("Snowman Piece", CATEGORY.ITEMS, "Frisk", { heal:45 }, "+45 HP (max 4 per match)"),
-      makeCard("Instant Noodles", CATEGORY.ITEMS, "Frisk", { heal:90 }, "+90 HP"),
-      makeCard("Legendary Hero", CATEGORY.ITEMS, "Frisk", { heal:40, atkBuff:1 }, "+40 HP, slight ATK buff"),
-      makeCard("Astronaut Food", CATEGORY.ITEMS, "Frisk", { heal:21 }, "+21 HP"),
-      makeCard("Hot Dog...?", CATEGORY.ITEMS, "Frisk", { heal:20 }, "+20 HP"),
-    ];
+    // Helper: include FIGHT guaranteed once at LV 19–20
+    const ensureFight = (pool, role)=>{
+      if(role!=="Frisk") return;
+      const hasFight = pool.some(c=>c.name==="FIGHT");
+      if(!hasFight) pool.push(friskOptions.find(c=>c.name==="FIGHT"));
+    };
 
-    const friskOptions = [
-      makeCard("FIGHT", CATEGORY.OPTIONS, "Frisk", { attackByWeapon:true }, "Attack based on weapon and ATK"),
-      makeCard("ACT", CATEGORY.OPTIONS, "Frisk", { act:true }, "Contextual actions (flirt, joke, check...)"),
-      makeCard("MERCY", CATEGORY.OPTIONS, "Frisk", { mercy:true }, "Spare or Flee"),
-    ];
+    // Player role
+    if(state.playerRole==="Frisk"){
+      let pItems = friskItems.slice();
 
-    const friskTruePacifistOnly = [
-      makeCard("SAVE", CATEGORY.OPTIONS, "Frisk", { save:true }, "Summon a lost soul ally (4 HP)", { rarity:"rare" })
-    ];
-
-    // Sans cards
-    const sansItems = [
-      makeCard("Hot Dog...?", CATEGORY.ITEMS, "Sans", { heal:20, stGain:15 }, "+20 HP, +15 ST"),
-      makeCard("Hot Cat", CATEGORY.ITEMS, "Sans", { heal:21, stGain:10 }, "+21 HP, +10 ST"),
-      makeCard("Ketchup", CATEGORY.ITEMS, "Sans", { heal:8, stGain:25 }, "+8 HP, +25 ST"),
-      makeCard("Burger", CATEGORY.ITEMS, "Sans", { heal:12, stGain:20 }, "+12 HP, +20 ST"),
-    ];
-
-    const sansOptions = [
-      makeCard("ACT (Nap)", CATEGORY.OPTIONS, "Sans", { nap:true }, "Nap: skip 2-3 of your turns, then full heal"),
-      makeCard("MERCY", CATEGORY.OPTIONS, "Sans", { mercy:true }, "Spare or Flee"),
-    ];
-
-    const sansMagic = [
-      makeCard("Bone Throw", CATEGORY.MAGIC, "Sans", { hits:3, dmgPerHit:1 }, "3x1 damage"),
-      makeCard("Bone Jumps", CATEGORY.MAGIC, "Sans", { hits:5, dmgPerHit:1 }, "5x1 damage"),
-      makeCard("Gaster Blaster", CATEGORY.MAGIC, "Sans", { hits:10, dmgPerHit:1 }, "10x1 damage"),
-    ];
-
-    // Route-based filters and biases
-    let playerPool = [];
-    let opponentPool = [];
-
-    const legendaryBias = progress.love >= 18; // bias Legendary Hero for Frisk above LV18
-    state.flags.legendaryBias = legendaryBias;
-
-    // Player and opponent decks based on their roles
-    if(state.playerRole === "Frisk"){
-      // Route restrictions for Frisk items
-      const fItems = friskItems.filter(c=>{
-        if(c.name === "Hot Dog...?" || c.name === "Astronaut Food"){
-          return route !== "GENOCIDE"; // cannot get in GENOCIDE
-        }
-        return true;
-      });
-
-      // Legendary Hero bias
-      const fItemsBiased = fItems.flatMap(c=>{
-        if(c.name === "Legendary Hero" && legendaryBias) return [c,c]; // double chance
-        return [c];
-      });
-
-      playerPool.push(...fItemsBiased, ...friskOptions);
-      if(route === "TRUE_PACIFIST"){
-        // Remove FIGHT, add SAVE, boost spare chance later
-        playerPool = playerPool.filter(c=>c.name !== "FIGHT");
-        playerPool.push(...friskTruePacifistOnly);
+      // GENOCIDE restriction for Frisk at very high LOVE: remove Hot Dog/Astronaut Food
+      if(loveLV>=19){
+        pItems = pItems.filter(c=> !["Hot Dog...?", "Astronaut Food"].includes(c.name));
       }
-    } else {
-      // Sans player
-      const sItems = sansItems.filter(c=>{
-        // No restriction in your specs except GENOCIDE list for Frisk — Sans can use his items
-        return true;
-      });
-      playerPool.push(...sItems, ...sansOptions, ...sansMagic);
+
+      // Legendary Hero bias when LOVE≥18
+      if(loveLV>=18){
+        const leg = friskItems.find(c=>c.name==="Legendary Hero");
+        if(leg) pItems.push(leg);
+      }
+
+      playerPool.push(...pItems, ...friskOptions);
+
+      // TRUE PACIFIST flavor if spared count high and LOVE==1: remove FIGHT, add SAVE
+      if(progress.love===1 && progress.spared>=50){
+        const withoutFight = playerPool.filter(c=>c.name!=="FIGHT");
+        playerPool.length = 0;
+        playerPool.push(...withoutFight, ...friskTruePacifistOnly);
+      }
+
+      // Guarantee one FIGHT at LV 19–20
+      if(loveLV>=19) ensureFight(playerPool, "Frisk");
+
+    } else { // Player Sans
+      playerPool.push(...sansItems, ...sansOptions, ...sansMagic);
     }
 
-    if(state.opponentRole === "Frisk"){
-      // AI Frisk deck
-      let oItems = friskItems.filter(c=>{
-        if(c.name === "Hot Dog...?" || c.name === "Astronaut Food"){
-          return route !== "GENOCIDE";
-        }
-        return true;
-      });
-      if(progress.love >= 18){
-        oItems = oItems.flatMap(c=> (c.name==="Legendary Hero") ? [c,c] : [c]);
+    // Opponent role
+    if(state.opponentRole==="Frisk"){
+      let oItems = friskItems.slice();
+      if(loveLV>=19){
+        oItems = oItems.filter(c=> !["Hot Dog...?", "Astronaut Food"].includes(c.name));
+      }
+      if(loveLV>=18){
+        const leg = friskItems.find(c=>c.name==="Legendary Hero");
+        if(leg) oItems.push(leg);
       }
       opponentPool.push(...oItems, ...friskOptions);
-      if(route === "TRUE_PACIFIST"){
-        opponentPool = opponentPool.filter(c=>c.name !== "FIGHT");
-        opponentPool.push(...friskTruePacifistOnly);
+      if(progress.love===1 && progress.spared>=50){
+        const withoutFight = opponentPool.filter(c=>c.name!=="FIGHT");
+        opponentPool.length = 0;
+        opponentPool.push(...withoutFight, ...friskTruePacifistOnly);
       }
+      if(loveLV>=19) ensureFight(opponentPool, "Frisk");
     } else {
-      // AI Sans deck
       opponentPool.push(...sansItems, ...sansOptions, ...sansMagic);
     }
 
-    // Build randomized draw decks
-    const playerDeck = shuffle(playerPool.slice());
-    const opponentDeck = shuffle(opponentPool.slice());
+    return { playerDeck: shuffle(playerPool), opponentDeck: shuffle(opponentPool) };
+  }
 
-    return { playerDeck, opponentDeck };
-  };
+  // Init match
+  function newMatch(){
+    // Random roles
+    if(Math.random()<0.5){ state.playerRole="Frisk"; state.opponentRole="Sans"; }
+    else { state.playerRole="Sans"; state.opponentRole="Frisk"; }
 
-  // Game flow
-  const newMatch = ()=>{
-    state.route = document.getElementById("routeSelect").value;
-    // Randomly assign roles
-    if(Math.random() < 0.5){
-      state.playerRole = "Frisk"; state.opponentRole = "Sans";
-    } else {
-      state.playerRole = "Sans"; state.opponentRole = "Frisk";
-    }
-
-    // Initialize stats
-    if(state.playerRole === "Frisk"){
-      const loveInfo = getLoveInfo(progress.love);
-      state.player = { hp:loveInfo.hp, maxHP:loveInfo.hp, st:0, maxST:0, atk:loveInfo.atk, def:loveInfo.def, love:progress.love, exp:progress.exp, weapon:loveInfo.weapon||"Stick (1 atk)" };
+    // Stats
+    if(state.playerRole==="Frisk"){
+      const li = getLoveInfo(progress.love);
+      state.player = { hp:li.hp, maxHP:li.hp, st:0, maxST:0, atk:li.atk, def:li.def, love:progress.love, exp:progress.exp, weapon:li.weapon||"Stick (1 atk)" };
     } else {
       state.player = { hp:1, maxHP:1, st:100, maxST:100, atk:0, def:0 };
     }
-    if(state.opponentRole === "Frisk"){
-      const enemyLove = Math.max(1, Math.min(18, progress.love)); // AI Frisk scales loosely up to 18
-      const loveInfo = getLoveInfo(enemyLove);
-      state.opponent = { hp:loveInfo.hp, maxHP:loveInfo.hp, st:0, maxST:0, atk:loveInfo.atk, def:loveInfo.def, love:enemyLove, exp:0, weapon:loveInfo.weapon||"Stick (1 atk)" };
+    if(state.opponentRole==="Frisk"){
+      const enemyLV = Math.min(18, Math.max(1, progress.love)); // scale AI roughly
+      const li = getLoveInfo(enemyLV);
+      state.opponent = { hp:li.hp, maxHP:li.hp, st:0, maxST:0, atk:li.atk, def:li.def, love:enemyLV, exp:0, weapon:li.weapon||"Stick (1 atk)" };
     } else {
       state.opponent = { hp:1, maxHP:1, st:100, maxST:100, atk:0, def:0 };
     }
 
-    state.turn = "player";
-    state.locked = false;
-    state.flags.pieUsed = false;
-    state.flags.snowmanPiecesUsed = 0;
-    state.flags.lostSoul = null;
+    // Reset flags
+    state.flags.pieUsed=false;
+    state.flags.snowmanPiecesUsed=0;
+    state.turn="player";
+    state.locked=false;
 
-    const { playerDeck, opponentDeck } = buildDeck();
-    state.deck = { player: playerDeck, opponent: opponentDeck };
+    // Build decks + draw
+    const { playerDeck, opponentDeck } = buildDecks();
+    state.deck.player = playerDeck;
+    state.deck.opponent = opponentDeck;
     state.playerHand = [];
     state.opponentHand = [];
-
-    // Initial draws
     drawCards("player", 5);
     drawCards("opponent", 5);
 
-    document.getElementById("log").innerHTML = "";
-    log(`A new match begins. You are ${state.playerRole}. Route: ${state.route}.`);
+    clearLog();
+    log(`Match start. You are ${state.playerRole}.`);
     renderAll();
     updateTurnBadge();
-    if(state.turn === "opponent"){
-      aiTurn();
-    }
-  };
-
-  // Utility helpers
-  const shuffle = (arr)=> {
-    for(let i=arr.length-1;i>0;i--){
-      const j = Math.floor(Math.random() * (i+1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-
-  function getLoveInfo(lv){
-    const entry = LOVE_TABLE.find(e=>e.lv===lv) || LOVE_TABLE[0];
-    return entry;
+    updateLoveBadge();
   }
 
+  // Utils
+  function getLoveInfo(lv){ return LOVE_TABLE.find(e=>e.lv===lv) || LOVE_TABLE[0]; }
+  function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
   function loadProgress(){
     try{
       const raw = localStorage.getItem(SAVE_KEY);
-      if(!raw) return { ...defaultProgress };
+      if(!raw) return {...defaultProgress};
       const p = JSON.parse(raw);
-      return { love: p.love||1, exp: p.exp||0 };
-    } catch(e){
-      return { ...defaultProgress };
-    }
+      return { love: p.love||1, exp:p.exp||0, spared:p.spared||0 };
+    }catch(e){ return {...defaultProgress}; }
   }
-
-  function saveProgress(){
-    localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
-  }
-
+  function saveProgress(){ localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); }
   function checkLevelUp(){
-    // Update LOVE based on EXP
-    let current = progress.love;
-    let changed = false;
+    let lv = progress.love;
+    let changed=false;
     while(true){
-      const info = getLoveInfo(current);
-      if(info.next === null || progress.exp < info.total + (info.next||0)) break;
-      current++;
-      changed = true;
+      const entry = getLoveInfo(lv);
+      if(entry.next===null) break;
+      const needed = entry.total + entry.next;
+      if(progress.exp >= needed){ lv++; changed=true; } else break;
     }
-    if(changed){
-      progress.love = Math.min(20, current);
-      log(`LOVE increased to LV ${progress.love}.`);
-      saveProgress();
-    }
+    if(changed){ progress.love=Math.min(20, lv); log(`LOVE increased to LV ${progress.love}.`); saveProgress(); updateLoveBadge(); }
   }
 
-  // Drawing cards
+  // Draw
   function drawCards(who, count){
     const d = state.deck[who];
-    for(let i=0;i<count;i++){
-      if(d.length===0) break;
-      const c = d.pop();
-      state[who+"Hand"].push(c);
-    }
+    for(let i=0;i<count;i++){ if(d.length===0) break; state[who+"Hand"].push(d.pop()); }
     renderHands();
   }
 
-  // Damage application with Sans dodge logic
-  function applyAttack(targetRole, hits, dmgPerHit, attacker){
-    const target = targetRole==="player" ? state.player : state.opponent;
-    const targetIsSans = (targetRole==="player" && state.playerRole==="Sans") || (targetRole==="opponent" && state.opponentRole==="Sans");
+  // Apply attack with Sans dodge rule (not for Frisk FIGHT)
+  function applyAttack(targetSide, hits, dmgPerHit, source, opts={}){
+    const target = state[targetSide];
+    const targetIsSans = (targetSide==="player" && state.playerRole==="Sans") || (targetSide==="opponent" && state.opponentRole==="Sans");
+    const bypassDodge = !!opts.bypassDodge; // true for Frisk FIGHT
+    let totalDamage=0;
 
-    let totalDamage = 0;
     for(let h=0; h<hits; h++){
-      if(targetIsSans && target.st >= 10){
-        target.st -= 10;
-        log(`Sans dodged the attack (−10 ST).`);
+      if(targetIsSans && !bypassDodge){
+        if(target.st>=10){
+          target.st-=10;
+          log(`Sans dodged (−10 ST).`);
+        } else {
+          target.hp=Math.max(0, target.hp - dmgPerHit);
+          totalDamage+=dmgPerHit;
+        }
       } else {
-        target.hp = Math.max(0, target.hp - dmgPerHit);
-        totalDamage += dmgPerHit;
+        target.hp=Math.max(0, target.hp - dmgPerHit);
+        totalDamage+=dmgPerHit;
       }
     }
-    if(totalDamage>0){
-      log(`${attacker} dealt ${totalDamage} damage.`);
-    }
+    if(totalDamage>0) log(`${source} dealt ${totalDamage} damage.`);
     renderBars();
     checkWin();
   }
 
   // Card play
-  async function playCardFromHand(who, cardId){
-    if(state.locked) return;
-    if(state.turn !== who) return;
+  async function playCard(who, cardId){
+    if(state.locked || state.turn!==who) return;
 
     const hand = state[who+"Hand"];
     const idx = hand.findIndex(c=>c.id===cardId);
     if(idx===-1) return;
     const card = hand[idx];
-
-    // Ownership restriction: only the character intended can use their cards
     const role = state[who+"Role"];
-    if(card.owner !== role){
-      flashIllegal(cardId);
-      return;
-    }
 
-    // Category restriction: Frisk cannot use MAGIC
-    if(role === "Frisk" && card.cat === CATEGORY.MAGIC){
-      log("Frisk cannot use MAGIC.");
-      flashIllegal(cardId);
-      return;
-    }
+    // Ownership
+    if(card.owner !== role){ flashIllegal(cardId); return; }
+    // Frisk cannot use MAGIC
+    if(role==="Frisk" && card.cat===CAT.MAGIC){ log("Frisk cannot use MAGIC."); flashIllegal(cardId); return; }
+    // Cost (for Sans’ cards only if used later)
+    if(card.cost && state[who].st<card.cost){ log(`${role} lacks stamina (${card.cost}).`); flashIllegal(cardId); return; }
+    // Pie once, Snowman max 4
+    if(role==="Frisk" && card.name==="Butterscotch Pie" && state.flags.pieUsed){ log("Pie can be used only once per match."); flashIllegal(cardId); return; }
+    if(role==="Frisk" && card.name==="Snowman Piece" && state.flags.snowmanPiecesUsed>=4){ log("Snowman Piece limit reached (4 per match)."); flashIllegal(cardId); return; }
 
-    // Cost check (used for Sans’ own stamina costs if any)
-    if(card.cost && state[who].st < card.cost){
-      log(`${role} lacks stamina (${card.cost}).`);
-      flashIllegal(cardId);
-      return;
-    }
-
-    // Limited items: Pie once per match, Snowman Piece up to 4
-    if(role==="Frisk" && card.name==="Butterscotch Pie" && state.flags.pieUsed){
-      log("Pie can be used only once per match.");
-      flashIllegal(cardId); return;
-    }
-    if(role==="Frisk" && card.name==="Snowman Piece" && state.flags.snowmanPiecesUsed>=4){
-      log("Snowman Piece limit reached (4 per match).");
-      flashIllegal(cardId); return;
-    }
-
-    // Consume cost
-    if(card.cost){ state[who].st -= card.cost; }
-
-    // Remove from hand
+    // Consume and resolve
     hand.splice(idx,1);
     renderHands();
+    await resolveCard(who, card);
 
-    // Resolve effect
-    await resolveEffect(who, card);
-
-    // Advance turn
     endTurn(who);
   }
 
-  async function resolveEffect(who, card){
+  async function resolveCard(who, card){
     const me = state[who];
-    const oppRole = who==="player" ? "opponent" : "player";
-    const opp = state[oppRole];
-    const meRoleName = state[who+"Role"];
-    const oppRoleName = state[oppRole+"Role"];
-    const actor = (who==="player") ? "You" : "AI";
+    const targetSide = (who==="player")?"opponent":"player";
+    const target = state[targetSide];
+    const actor = who==="player"?"You":"AI";
+    const meRole = state[who+"Role"];
+    const targetRole = state[targetSide+"Role"];
 
-    if(card.cat === CATEGORY.ITEMS){
-      // Healing items
+    // ITEMS
+    if(card.cat===CAT.ITEMS){
       if(card.effect.healFull){
-        const before = me.hp;
-        me.hp = me.maxHP;
-        log(`${actor} used ${card.name} and fully healed (${before}→${me.hp}).`);
-        if(meRoleName==="Frisk") state.flags.pieUsed = true;
+        const before = me.hp; me.hp=me.maxHP; log(`${actor} used ${card.name} and fully healed (${before}→${me.hp}).`);
+        if(meRole==="Frisk") state.flags.pieUsed=true;
       } else if(card.effect.heal){
-        const heal = card.effect.heal;
-        const before = me.hp;
-        me.hp = Math.min(me.maxHP, me.hp + heal);
+        const before=me.hp; me.hp=Math.min(me.maxHP, me.hp+card.effect.heal);
         log(`${actor} used ${card.name} (+${me.hp-before} HP).`);
-        if(meRoleName==="Frisk" && card.name==="Snowman Piece") state.flags.snowmanPiecesUsed++;
+        if(meRole==="Frisk" && card.name==="Snowman Piece") state.flags.snowmanPiecesUsed++;
       }
-      // Stamina gains (Sans)
-      if(card.effect.stGain){
-        const gained = card.effect.stGain;
-        oppRoleName; // eslint
-        me.st = Math.min(me.maxST, me.st + gained);
-        log(`${actor} recovered ${gained} stamina.`);
-      }
-      // Legendary Hero: slight ATK buff
-      if(card.effect.atkBuff){
-        me.atk += card.effect.atkBuff;
-        log(`${actor} feels stronger (+${card.effect.atkBuff} ATK).`);
-      }
-    } else if(card.cat === CATEGORY.OPTIONS){
-      if(card.effect.attackByWeapon){
-        // Frisk FIGHT: damage based on weapon and ATK
-        const loveInfo = (meRoleName==="Frisk") ? getLoveInfo(me.love||progress.love) : { atk:0 };
+      if(card.effect.stGain){ me.st=Math.min(me.maxST, me.st+card.effect.stGain); log(`${actor} recovered ${card.effect.stGain} stamina.`); }
+      if(card.effect.atkBuff){ me.atk+=card.effect.atkBuff; log(`${actor} feels stronger (+${card.effect.atkBuff} ATK).`); }
+    }
+
+    // OPTIONS
+    if(card.cat===CAT.OPTIONS){
+      if(card.effect.fight){
+        // Frisk FIGHT: ignore Sans dodge
+        const loveInfo = (meRole==="Frisk")? getLoveInfo(me.love||progress.love):{atk:0};
         const weaponAtk = parseWeaponAtk(me.weapon);
         const base = (loveInfo.atk||0) + weaponAtk;
-        const dmg = Math.max(0, base - (opp.def||0));
         const hits = (me.weapon && me.weapon.includes("Torn Notebook")) ? randInt(3,4) : 1;
-        log(`${actor} used FIGHT (${hits} hit${hits>1?"s":""}, ${dmg} each).`);
-        applyAttack(oppRole, hits, dmg, actor);
+        const dmg = Math.max(0, base - (target.def||0));
+        log(`${actor} used FIGHT (${hits}×${dmg}).`);
+        applyAttack(targetSide, hits, dmg, actor, { bypassDodge:true });
       }
       if(card.effect.act){
-        // Non-damaging; apply route-friendly chances (buff spare odds)
         const flavor = ["Check","Flirt","Threaten","Pet","Joke"];
         const actUsed = flavor[Math.floor(Math.random()*flavor.length)];
-        log(`${actor} used ACT: ${actUsed}. The foe seems affected.`);
-        // Small debuff to opponent DEF to simulate ACT effect
-        opp.def = Math.max(0, (opp.def||0) - 1);
+        log(`${actor} used ACT: ${actUsed}. DEF falls by 1.`);
+        target.def = Math.max(0, (target.def||0) - 1);
       }
       if(card.effect.mercy){
-        // MERCY: choose Spare or Flee (AI: simple heuristic)
         if(who==="player"){
-          const choice = await chooseMercy();
+          const choice = await promptMercy();
           if(choice==="spare"){
-            const spared = trySpare(oppRoleName);
-            if(spared){
-              log("You spared the opponent. Match ends in mercy.");
-              endGame("draw_mercy");
-              return;
-            } else {
-              log("Spare failed. Turn ends.");
-            }
+            if(trySpare()){ log("You spared the opponent. Draw by mercy."); progress.spared++; saveProgress(); endGame("draw_mercy"); return; }
+            else { log("Spare failed."); }
           } else if(choice==="flee"){
-            const fled = tryFlee();
-            if(fled){
-              log("You fled. Match ends in a draw.");
-              endGame("draw_flee");
-              return;
-            } else {
-              log("Could not flee. Turn ends.");
-            }
+            if(tryFlee()){ log("You fled. Draw."); endGame("draw_flee"); return; }
+            else { log("Could not flee."); }
           }
         } else {
-          // AI mercy: tries spare if player HP low and route pacifist-ish
-          const willSpare = (state.route==="PACIFIST" || state.route==="TRUE_PACIFIST") && state.player.hp <= Math.ceil(state.player.maxHP*0.25);
-          if(willSpare){
-            log("AI attempted to spare you. Mercy granted.");
-            endGame("draw_mercy");
-            return;
-          } else {
-            log("AI considered mercy but passed.");
-          }
+          const willSpare = progress.love===1 && (state.player.hp <= Math.ceil(state.player.maxHP*0.25));
+          if(willSpare){ log("AI spared you. Draw."); progress.spared++; saveProgress(); endGame("draw_mercy"); return; }
         }
       }
       if(card.effect.save){
-        // TRUE PACIFIST: summon lost soul ally (4 HP)
-        if(state.flags.lostSoul){
-          log("A lost soul is already helping.");
-        } else {
-          state.flags.lostSoul = { name: pickLostSoul(), hp:4 };
-          log(`Lost Soul (${state.flags.lostSoul.name}) appears with 4 HP to aid you.`);
-        }
+        if(state.flags.lostSoul){ log("A Lost Soul is already helping."); }
+        else { state.flags.lostSoul = { name: pickLostSoul(), hp:4 }; log(`Lost Soul (${state.flags.lostSoul.name}) joins with 4 HP.`); }
       }
       if(card.effect.nap){
-        // Sans Nap: skip own next 2–3 turns, then full heal
-        const skipCount = randInt(2,3);
-        me.napTurns = skipCount;
-        log(`${actor} starts a nap (will skip ${skipCount} turns).`);
+        const skip = randInt(2,3); me.napTurns = skip; log(`${actor} starts a nap (skip ${skip} turns, then full heal).`);
       }
-    } else if(card.cat === CATEGORY.MAGIC){
-      // Sans attack spells: multiple 1-damage hits
-      const hits = card.effect.hits || 1;
-      const dmg = card.effect.dmgPerHit || 1;
-      log(`${actor} cast ${card.name} (${hits} hit${hits>1?"s":""}).`);
-      applyAttack(oppRole, hits, dmg, actor);
+    }
+
+    // MAGIC → Battlebox
+    if(card.cat===CAT.MAGIC){
+      const pattern = card.effect.pattern;
+      const duration = card.effect.duration || 3000;
+      const targetIsPlayer = (who==="opponent"); // opponent played → player must dodge
+      await runBattlebox({ pattern, duration, targetSide: targetIsPlayer ? "player" : "opponent" });
     }
   }
-
-  function parseWeaponAtk(weaponName){
-    if(!weaponName) return 0;
-    const m = weaponName.match(/(\d+)\s*atk/i);
-    return m ? parseInt(m[1],10) : 0;
-  }
-
-  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
   // Mercy helpers
-  async function chooseMercy(){
+  async function promptMercy(){
     return new Promise(resolve=>{
       const choice = window.prompt("MERCY: type 'spare' or 'flee'");
-      if(!choice){ resolve(null); return; }
-      const c = choice.toLowerCase();
-      if(c==="spare" || c==="flee"){ resolve(c); } else { resolve(null); }
+      const c = (choice||"").toLowerCase();
+      resolve((c==="spare"||c==="flee")?c:null);
     });
   }
-
-  function spareChance(){
-    // Base chances per route; ACT improves chances slightly via DEF debuff and route signal
-    switch(state.route){
-      case "TRUE_PACIFIST": return 0.75;
-      case "PACIFIST": return 0.45;
-      case "NEUTRAL": return 0.25;
-      case "GENOCIDE": return 0.0;
-      default: return 0.25;
-    }
+  function trySpare(){
+    // LOVE=1 boosts mercy chance; high LOVE reduces
+    const lv = progress.love;
+    const base = lv===1 ? 0.6 : lv<10 ? 0.3 : lv<18 ? 0.2 : 0.0;
+    return Math.random() < base;
   }
-
-  function trySpare(targetRoleName){
-    const chance = spareChance();
-    const roll = Math.random();
-    return roll < chance;
-  }
-
   function tryFlee(){
-    // Flee fails in GENOCIDE against powerful foes; otherwise modest chance
-    if(state.route==="GENOCIDE") return false;
+    const lv = progress.love;
+    if(lv>=19) return false;
     return Math.random() < 0.5;
   }
 
-  function pickLostSoul(){
-    const pool = ["Sans","Papyrus","Undyne","Toriel","Alphys","Asgore"];
-    return pool[Math.floor(Math.random()*pool.length)];
-  }
-
-  // End turn, regen and lost soul assist
+  // End turn, regen, nap, lost soul assist
   function endTurn(who){
-    // Lost soul small assist on player's side
-    if(state.flags.lostSoul){
-      const ally = state.flags.lostSoul;
-      if(ally.hp>0){
-        // 50% chance to chip opponent by 1
-        if(Math.random()<0.5){
-          const targetRole = (who==="player") ? "opponent" : "player"; // ally helps current actor’s side
-          applyAttack(targetRole, 1, 1, "Lost Soul");
-          log(`Lost Soul (${ally.name}) helps with 1 damage.`);
-        }
-        // Ally can be randomly targeted by AI spells later (simple: 10% chance they take 1 damage each turn)
-        if(Math.random()<0.1){
-          ally.hp = Math.max(0, ally.hp-1);
-          log(`Lost Soul (${ally.name}) was hurt (−1 HP).`);
-        }
+    // Lost soul assist: small 50% chip
+    if(state.flags.lostSoul && state.flags.lostSoul.hp>0){
+      if(Math.random()<0.5){
+        const targetSide = (who==="player")?"opponent":"player";
+        applyAttack(targetSide, 1, 1, "Lost Soul");
+        log(`Lost Soul (${state.flags.lostSoul.name}) chipped for 1.`);
+      }
+      if(Math.random()<0.1){
+        state.flags.lostSoul.hp = Math.max(0, state.flags.lostSoul.hp-1);
+        log(`Lost Soul (${state.flags.lostSoul.name}) took 1 damage.`);
       }
     }
 
-    // Turn swap and Sans stamina regen
+    // Swap turns + Sans stamina regen
     if(who==="player"){
-      state.turn = "opponent";
-      // Opponent pre-turn effects
-      if(state.opponentRole==="Sans"){
-        state.opponent.st = Math.min(state.opponent.maxST, state.opponent.st + 2);
-      }
+      state.turn="opponent";
+      if(state.opponentRole==="Sans"){ state.opponent.st=Math.min(state.opponent.maxST, state.opponent.st+2); }
     } else {
-      state.turn = "player";
-      if(state.playerRole==="Sans"){
-        state.player.st = Math.min(state.player.maxST, state.player.st + 2);
-      }
+      state.turn="player";
+      if(state.playerRole==="Sans"){ state.player.st=Math.min(state.player.maxST, state.player.st+2); }
     }
     updateTurnBadge();
     renderBars();
 
-    // Nap skipping
-    const actorRole = state.turn==="player" ? "player" : "opponent";
-    const actor = state[actorRole];
+    // Nap skip chain
+    const actorKey = state.turn==="player" ? "player" : "opponent";
+    const actor = state[actorKey];
     if(actor.napTurns && actor.napTurns>0){
       actor.napTurns--;
-      log(`${state[actorRole+"Role"]} is napping. Turn skipped.`);
-      // If nap just ended, full heal
-      if(actor.napTurns===0){
-        actor.hp = actor.maxHP;
-        log(`${state[actorRole+"Role"]} wakes up fully healed.`);
-      }
-      // Advance again
+      log(`${state[actorKey+"Role"]} is napping. Turn skipped.`);
+      if(actor.napTurns===0){ actor.hp=actor.maxHP; log(`${state[actorKey+"Role"]} wakes fully healed.`); renderBars(); }
       endTurn(state.turn);
       return;
     }
 
-    // AI if opponent turn
-    if(state.turn==="opponent"){
-      aiTurn();
-    }
+    // AI turn
+    if(state.turn==="opponent"){ aiTurn(); }
   }
 
-  // Win conditions and EXP
+  // Win + EXP
   function checkWin(){
     if(state.opponent.hp<=0){
-      // If player killed opponent, award EXP only if player is Frisk
       if(state.playerRole==="Frisk"){
-        const expGain = expForKill();
-        progress.exp += expGain;
-        log(`You gained ${expGain} EXP.`);
-        checkLevelUp();
+        const expGain = expForKill(state.opponent.maxHP);
+        progress.exp += expGain; log(`You gained ${expGain} EXP.`);
+        saveProgress(); checkLevelUp();
       }
-      endGame("player_win");
-      return true;
+      endGame("player_win"); return true;
     }
-    if(state.player.hp<=0){
-      // AI Frisk gets no EXP in persistent save; Sans no EXP either
-      endGame("opponent_win");
-      return true;
-    }
+    if(state.player.hp<=0){ endGame("opponent_win"); return true; }
     return false;
   }
-
-  function expForKill(){
-    // Simple scaling by opponent maxHP
-    const maxHP = state.opponent.maxHP;
-    if(maxHP<=1) return 10; // killing Sans still grants base EXP
-    return Math.min(500, Math.max(10, Math.floor(maxHP * 0.8)));
-  }
-
+  function expForKill(maxHP){ if(maxHP<=1) return 10; return Math.min(500, Math.max(10, Math.floor(maxHP*0.8))); }
   function endGame(result){
-    state.locked = true;
-    let badge = document.getElementById("turnBadge");
-    if(result==="player_win") badge.textContent = "You win";
-    else if(result==="opponent_win") badge.textContent = "You lose";
-    else if(result==="draw_mercy") badge.textContent = "Mercy";
-    else if(result==="draw_flee") badge.textContent = "Draw";
+    state.locked=true;
+    const badge = document.getElementById("turnBadge");
+    badge.textContent = result==="player_win"?"You win": result==="opponent_win"?"You lose": result==="draw_mercy"?"Mercy": "Draw";
     log(`Match ended: ${badge.textContent}.`);
-    renderBars();
-    // Update Frisk LV panel after EXP changes
-    if(state.playerRole==="Frisk"){
-      const l = getLoveInfo(progress.love);
-      document.getElementById("playerName").textContent = `Frisk — LV ${progress.love}`;
-    }
+    renderBars(); updateLoveBadge();
   }
 
-  // Rendering
-  function renderHands(){
-    renderHand("player");
-    renderHand("opponent");
-  }
-
+  // Render
+  function renderHands(){ renderHand("player"); renderHand("opponent"); }
   function renderHand(who){
     const container = document.getElementById(who==="player"?"playerHand":"opponentHand");
     container.innerHTML = "";
-    const hand = state[who+"Hand"];
-    hand.forEach(card=>{
+    state[who+"Hand"].forEach(card=>{
       const div = document.createElement("div");
-      div.className = "card " + (card.cat===CATEGORY.ITEMS ? "items" : card.cat===CATEGORY.OPTIONS ? "options" : "magic");
+      div.className = "card " + (card.cat===CAT.ITEMS?"items": card.cat===CAT.OPTIONS?"options":"magic");
       if(card.rarity==="rare") div.classList.add("rare");
-
-      const tag = document.createElement("div"); tag.className="tag"; tag.textContent = card.cat;
-      const name = document.createElement("div"); name.className="name"; name.textContent = card.name;
-      const desc = document.createElement("div"); desc.className="desc"; desc.textContent = card.desc || "";
+      const tag = document.createElement("div"); tag.className="tag"; tag.textContent=card.cat;
+      const name = document.createElement("div"); name.className="name"; name.textContent=who==="player"?card.name:"???";
+      const desc = document.createElement("div"); desc.className="desc"; desc.textContent=who==="player"?(card.desc||""):"";
       const cost = document.createElement("div"); cost.className="cost"; cost.textContent = (card.cost?`ST ${card.cost}`:"");
-
-      div.appendChild(tag); div.appendChild(name); div.appendChild(desc); div.appendChild(cost);
-
+      div.append(tag,name,desc,cost);
       if(who==="player"){
         div.setAttribute("draggable","true");
-        // Playable highlight
-        if(state.turn==="player" && !state.locked){ div.classList.add("playable"); }
-        div.addEventListener("dragstart", (e)=>{
+        if(state.turn==="player" && !state.locked) div.classList.add("playable");
+        div.addEventListener("dragstart", e=>{
           if(state.turn!=="player" || state.locked){ e.preventDefault(); return; }
           e.dataTransfer.setData("text/plain", card.id);
         });
-        div.addEventListener("dblclick", ()=> playCardFromHand("player", card.id));
-      } else {
-        // Opponent hand hidden — show name dimmed
-        desc.textContent = "";
-        name.textContent = "???";
+        let taps=0; div.addEventListener("click", ()=>{
+          taps++; setTimeout(()=>{ taps=0; }, 300);
+          if(taps>=2) playCard("player", card.id);
+        });
+        div.addEventListener("dblclick", ()=> playCard("player", card.id));
       }
-
       div.dataset.id = card.id;
       container.appendChild(div);
     });
   }
-
   function renderBars(){
-    const pHP = document.getElementById("playerHPBar");
-    const pST = document.getElementById("playerSTBar");
-    const oHP = document.getElementById("opponentHPBar");
-    const oST = document.getElementById("opponentSTBar");
-
-    const hpPctP = Math.round(100 * state.player.hp / state.player.maxHP);
-    const stPctP = state.player.maxST>0 ? Math.round(100 * state.player.st / state.player.maxST) : 0;
-    const hpPctO = Math.round(100 * state.opponent.hp / state.opponent.maxHP);
-    const stPctO = state.opponent.maxST>0 ? Math.round(100 * state.opponent.st / state.opponent.maxST) : 0;
-
-    pHP.style.width = hpPctP+"%"; oHP.style.width = hpPctO+"%";
-    pST.style.width = stPctP+"%"; oST.style.width = stPctO+"%";
-
-    document.getElementById("playerHPText").textContent = `${state.player.hp}/${state.player.maxHP}`;
-    document.getElementById("playerSTText").textContent = `${state.player.st}/${state.player.maxST}`;
-    document.getElementById("opponentHPText").textContent = `${state.opponent.hp}/${state.opponent.maxHP}`;
-    document.getElementById("opponentSTText").textContent = `${state.opponent.st}/${state.opponent.maxST}`;
-
-    // Role headings and stats
+    const pHPB=document.getElementById("playerHPBar"), oHPB=document.getElementById("opponentHPBar");
+    const pSTB=document.getElementById("playerSTBar"), oSTB=document.getElementById("opponentSTBar");
+    const p=state.player, o=state.opponent;
+    pHPB.style.width = Math.round(100*p.hp/p.maxHP)+"%";
+    oHPB.style.width = Math.round(100*o.hp/o.maxHP)+"%";
+    pSTB.style.width = p.maxST? Math.round(100*p.st/p.maxST)+"%":"0%";
+    oSTB.style.width = o.maxST? Math.round(100  o.st/o.maxST)+"%":"0%";
+    document.getElementById("playerHPText").textContent=`${p.hp}/${p.maxHP}`;
+    document.getElementById("opponentHPText").textContent=`${o.hp}/${o.maxHP}`;
+    document.getElementById("playerSTText").textContent=`${p.st}/${p.maxST}`;
+    document.getElementById("opponentSTText").textContent=`${o.st}/${o.maxST}`;
     document.getElementById("playerRole").textContent = state.playerRole;
     document.getElementById("opponentRole").textContent = state.opponentRole;
-    document.getElementById("playerRouteText").textContent = state.route;
-
+    const li = (state.playerRole==="Frisk")? getLoveInfo(progress.love): null;
+    document.getElementById("routeText").textContent = li? li.route : "—";
     if(state.playerRole==="Frisk"){
-      const info = getLoveInfo(progress.love);
       document.getElementById("playerName").textContent = `Frisk — LV ${progress.love}`;
-      document.getElementById("playerStatsText").textContent = `${state.player.atk} / ${state.player.def}`;
-      document.getElementById("playerWeaponText").textContent = info.weapon || state.player.weapon || "Stick (1 atk)";
-      document.getElementById("opponentName").textContent = state.opponentRole==="Sans" ? "Sans — 1 HP" : `Frisk — LV ${state.opponent.love||1}`;
+      document.getElementById("playerStatsText").textContent = `${p.atk} / ${p.def}`;
+      document.getElementById("playerWeaponText").textContent = li.weapon || p.weapon || "Stick (1 atk)";
+      document.getElementById("opponentName").textContent = state.opponentRole==="Sans"?"Sans — 1 HP":`Frisk — LV ${state.opponent.love||1}`;
     } else {
       document.getElementById("playerName").textContent = "Sans — 1 HP";
-      document.getElementById("playerStatsText").textContent = `${state.player.atk||0} / ${state.player.def||0}`;
-      document.getElementById("playerWeaponText").textContent = `—`;
-      document.getElementById("opponentName").textContent = state.opponentRole==="Sans" ? "Sans — 1 HP" : `Frisk — LV ${state.opponent.love||1}`;
+      document.getElementById("playerStatsText").textContent = `${p.atk||0} / ${p.def||0}`;
+      document.getElementById("playerWeaponText").textContent = "—";
+      document.getElementById("opponentName").textContent = state.opponentRole==="Sans"?"Sans — 1 HP":`Frisk — LV ${state.opponent.love||1}`;
     }
-
-    document.getElementById("playerLoveText").textContent =
-      (state.playerRole==="Frisk") ? `LV ${progress.love} / ${progress.exp} EXP` : `—`;
   }
-
-  function renderAll(){
-    renderHands();
-    renderBars();
-  }
-
-  function updateTurnBadge(){
-    const badge = document.getElementById("turnBadge");
-    badge.textContent = state.turn==="player" ? "Your turn" : "Opponent turn";
-  }
-
-  function flashIllegal(cardId){
-    const el = document.querySelector(`.card[data-id="${cardId}"]`);
-    if(el){ el.classList.add("illegal"); setTimeout(()=> el.classList.remove("illegal"), 300); }
-  }
-
-  function log(msg){
-    const el = document.getElementById("log");
-    const p = document.createElement("p");
-    p.textContent = msg;
-    el.appendChild(p);
-    el.scrollTop = el.scrollHeight;
-  }
+  function renderAll(){ renderHands(); renderBars(); }
+  function updateTurnBadge(){ document.getElementById("turnBadge").textContent = state.turn==="player"?"Your turn":"Opponent turn"; }
+  function updateLoveBadge(){ document.getElementById("loveBadge").textContent = `LOVE: ${progress.love} (EXP ${progress.exp}, Spared ${progress.spared})`; }
+  function clearLog(){ document.getElementById("log").innerHTML=""; }
+  function log(msg){ const el=document.getElementById("log"); const p=document.createElement("p"); p.textContent=msg; el.appendChild(p); el.scrollTop=el.scrollHeight; }
+  function flashIllegal(id){ const el=document.querySelector(`.card[data-id="${id}"]`); if(el){ el.classList.add("illegal"); setTimeout(()=>el.classList.remove("illegal"),300);} }
+  function parseWeaponAtk(name){ const m=(name||"").match(/(\d+)\s*atk/i); return m?parseInt(m[1],10):0; }
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
   // Drag target
-  const pileArea = document.getElementById("pileArea");
+  const pileArea=document.getElementById("pileArea");
   pileArea.addEventListener("dragover", e=> e.preventDefault());
   pileArea.addEventListener("drop", e=>{
     e.preventDefault();
     if(state.turn!=="player" || state.locked) return;
-    const id = e.dataTransfer.getData("text/plain");
-    playCardFromHand("player", id);
+    const id=e.dataTransfer.getData("text/plain");
+    playCard("player", id);
   });
 
-  // Draw behavior: draw 1 card from your deck
+  // Draw click
   document.getElementById("drawDeck").addEventListener("click", ()=>{
     if(state.turn!=="player" || state.locked) return;
-    drawCards("player", 1);
+    drawCards("player",1);
   });
 
-  // AI logic
+  // AI
   async function aiTurn(){
-    state.locked = true;
-    renderBars();
-    await sleep(600);
+    state.locked=true;
+    await sleep(500);
 
-    const hand = state.opponentHand;
-    // Choose card: priority — MAGIC (if Sans), FIGHT (if Frisk), then ITEMS if low, then MERCY if pacifist route and player low
-    let choice = null;
+    const hand=state.opponentHand;
+    let choice=null;
 
     if(state.opponentRole==="Sans"){
-      // If player hp low, try Gaster; else Bone Jumps; else Bone Throw
-      const magicPrefs = ["Gaster Blaster","Bone Jumps","Bone Throw"];
-      choice = hand.find(c=> c.cat===CATEGORY.MAGIC && magicPrefs.includes(c.name)) ||
-               hand.find(c=> c.cat===CATEGORY.MAGIC);
-      // If badly hurt (<50% ST), use Ketchup/Burger/Hot Cat/Hot Dog
-      if(!choice && state.opponent.st < 30){
-        choice = hand.find(c=> c.cat===CATEGORY.ITEMS);
-      }
-    } else {
-      // AI Frisk: use FIGHT if available
-      choice = hand.find(c=> c.name==="FIGHT");
-      // If low HP, use best heal
-      if(!choice && state.opponent.hp < Math.ceil(state.opponent.maxHP*0.5)){
-        const heals = hand.filter(c=> c.cat===CATEGORY.ITEMS);
-        // Prefer bigger heals
-        choice = heals.sort((a,b)=> (valueHeal(b)-valueHeal(a)))[0] || null;
-      }
-      // Pacifist routes may attempt MERCY if player low
-      if(!choice && (state.route==="PACIFIST" || state.route==="TRUE_PACIFIST")){
-        choice = hand.find(c=> c.name==="MERCY");
-      }
-    }
-
-    if(!choice){
-      // Draw a card
-      drawCards("opponent", 1);
-      log("Opponent draws a card.");
-      await sleep(400);
-      choice = state.opponentHand[0] || null;
+      // Prefer Gaster → Bars → Bones
+      const order=["Gaster Blaster","Bone Jumps","Bone Throw"];
+      choice = hand.find(c=> c.cat===CAT.MAGIC && order.includes(c.name)) || hand.find(c=>c.cat===CAT.MAGIC);
       if(!choice){
-        log("Opponent passes.");
-        state.locked = false;
-        endTurn("opponent");
-        return;
+        // Heal if low stamina or HP
+        if(state.opponent.st<30 || state.opponent.hp<state.opponent.maxHP*0.5) choice=hand.find(c=>c.cat===CAT.ITEMS);
       }
+      if(!choice) choice = hand.find(c=> c.cat===CAT.OPTIONS && c.effect.nap) || hand[0];
+    } else {
+      // Frisk: FIGHT first, else heal, else MERCY if LOVE low
+      choice = hand.find(c=> c.name==="FIGHT");
+      if(!choice && state.opponent.hp < Math.ceil(state.opponent.maxHP*0.6)){
+        const heals = hand.filter(c=>c.cat===CAT.ITEMS);
+        if(heals.length){ heals.sort((a,b)=> (valueHeal(b)-valueHeal(a))); choice=heals[0]; }
+      }
+      if(!choice && progress.love===1){ choice = hand.find(c=> c.name==="MERCY") || hand[0]; }
+      if(!choice) choice = hand[0];
     }
 
-    await playCardFromHand("opponent", choice.id);
-    state.locked = false;
+    if(choice){ await playCard("opponent", choice.id); }
+    else { log("Opponent passes."); }
+
+    state.locked=false;
     renderAll();
   }
-
-  function valueHeal(card){
-    if(card.effect.healFull) return 999;
-    return card.effect.heal||0;
-  }
-
+  function valueHeal(card){ if(card.effect.healFull) return 999; return card.effect.heal||0; }
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
-  // UI: New match
+  // Battlebox engine
+  async function runBattlebox({ pattern, duration, targetSide }){
+    const overlay = document.getElementById("overlay");
+    const box = document.getElementById("battlebox");
+    const soul = document.getElementById("soul");
+    const info = document.getElementById("bbInfo");
+    const timerEl = document.getElementById("bbTimer");
+    overlay.style.display="flex";
+
+    info.textContent = patternLabel(pattern);
+    timerEl.textContent = (duration/1000).toFixed(1)+"s";
+
+    // Position soul center
+    const boxRect = box.getBoundingClientRect();
+    const stateSoul = { x: boxRect.width/2 - 9, y: boxRect.height/2 - 9, vx:0, vy:0, speed: 140 }; // px/s
+    placeSoul();
+
+    // Controls (player vs AI)
+    const targetIsPlayer = (targetSide==="player");
+    let keys = { up:false, down:false, left:false, right:false };
+    function onKey(e, val){
+      const k=e.key.toLowerCase();
+      if(k==="arrowup"||k==="w") keys.up=val;
+      if(k==="arrowdown"||k==="s") keys.down=val;
+      if(k==="arrowleft"||k==="a") keys.left=val;
+      if(k==="arrowright"||k==="d") keys.right=val;
+    }
+    if(targetIsPlayer){
+      window.addEventListener("keydown", e=>onKey(e,true));
+      window.addEventListener("keyup", e=>onKey(e,false));
+    }
+
+    // Mobile buttons
+    const mc = box.querySelector(".mobile-controls");
+    const btns = mc.querySelectorAll("button");
+    const touchState = { up:false,down:false,left:false,right:false };
+    btns.forEach(b=>{
+      b.addEventListener("touchstart", e=>{ e.preventDefault(); touchState[b.dataset.dir]=true; });
+      b.addEventListener("touchend", e=>{ e.preventDefault(); touchState[b.dataset.dir]=false; });
+    });
+
+    // Projectiles
+    const projs = [];
+    const beams = [];
+    spawnPattern(pattern, projs, beams, boxRect);
+
+    // Loop
+    let last = performance.now();
+    let elapsed = 0;
+    let running = true;
+
+    await new Promise(resolve=>{
+      function step(now){
+        if(!running) return;
+        const dt = Math.min(0.033, (now-last)/1000); // cap dt ~33ms
+        last=now; elapsed += dt*1000;
+        // Update timer
+        const remain = Math.max(0, duration - Math.floor(elapsed));
+        timerEl.textContent = (remain/1000).toFixed(1)+"s";
+
+        // Move soul
+        if(targetIsPlayer){
+          const up = keys.up || touchState.up;
+          const down = keys.down || touchState.down;
+          const left = keys.left || touchState.left;
+          const right = keys.right || touchState.right;
+          stateSoul.vx = (right?1:0) - (left?1:0);
+          stateSoul.vy = (down?1:0) - (up?1:0);
+        } else {
+          // AI dodge: move away from nearest projectile center
+          const nearest = nearestHazard(stateSoul, projs, beams);
+          if(nearest){
+            const dx = stateSoul.x - nearest.x;
+            const dy = stateSoul.y - nearest.y;
+            const len = Math.max(1, Math.hypot(dx,dy));
+            stateSoul.vx = dx/len;
+            stateSoul.vy = dy/len;
+          } else {
+            stateSoul.vx = 0; stateSoul.vy = 0;
+          }
+        }
+        stateSoul.x += stateSoul.vx * stateSoul.speed * dt;
+        stateSoul.y += stateSoul.vy * stateSoul.speed * dt;
+        clampSoul();
+
+        // Move hazards
+        projs.forEach(p=>{
+          p.x += p.vx * dt; p.y += p.vy * dt;
+          p.el.style.left = p.x + "px"; p.el.style.top = p.y + "px";
+        });
+        beams.forEach(b=>{
+          b.t += dt;
+          // simple pulse (on/off)
+          const on = Math.floor(b.t*2)%2===0;
+          b.el.style.opacity = on?0.9:0.2;
+        });
+
+        // Collision: 1 damage per frame of contact
+        const hit = colliding(stateSoul, projs, beams);
+        if(hit){
+          const side = targetSide;
+          state[side].hp = Math.max(0, state[side].hp - 1);
+          renderBars();
+          if(checkWin()){ running=false; cleanup(); resolve(); return; }
+        }
+
+        // Finish
+        if(elapsed >= duration){
+          running=false; cleanup(); resolve(); return;
+        }
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+
+    function placeSoul(){ soul.style.left = stateSoul.x+"px"; soul.style.top = stateSoul.y+"px"; }
+    function clampSoul(){
+      const w = boxRect.width, h = boxRect.height;
+      stateSoul.x = Math.max(0, Math.min(w-18, stateSoul.x));
+      stateSoul.y = Math.max(0, Math.min(h-18, stateSoul.y));
+      placeSoul();
+    }
+    function cleanup(){
+      // Remove hazards
+      projs.forEach(p=> p.el.remove());
+      beams.forEach(b=> b.el.remove());
+      // Remove listeners
+      window.removeEventListener("keydown", e=>onKey(e,true));
+      window.removeEventListener("keyup", e=>onKey(e,false));
+      overlay.style.display="none";
+    }
+  }
+
+  function patternLabel(p){ return p==="bones"?"Bone Throw": p==="bars"?"Bone Jumps":"Gaster Blaster"; }
+  function spawnPattern(p, projs, beams, rect){
+    const box = document.getElementById("battlebox");
+    if(p==="bones"){
+      // Scatter bones moving diagonally
+      for(let i=0;i<18;i++){
+        const el=document.createElement("div");
+        el.className="proj"; el.style.width="24px"; el.style.height="6px"; el.style.background="#ddd";
+        const x=Math.random()*rect.width, y=Math.random()*rect.height;
+        const vx=(Math.random()<0.5?-1:1)* (30+Math.random()*60);
+        const vy=(Math.random()<0.5?-1:1)* (30+Math.random()*60);
+        el.style.left=x+"px"; el.style.top=y+"px";
+        box.appendChild(el);
+        projs.push({ el, x, y, vx, vy, w:24, h:6 });
+      }
+    } else if(p==="bars"){
+      // Sweeping bars from sides
+      for(let i=0;i<6;i++){
+        const vertical = i%2===0;
+        const el=document.createElement("div");
+        el.className="proj"; el.style.background="#bbb";
+        if(vertical){ el.style.width="8px"; el.style.height=(rect.height*0.8)+"px"; }
+        else { el.style.height="8px"; el.style.width=(rect.width*0.8)+"px"; }
+        const speed = 60+Math.random()*80;
+        const x = vertical? (Math.random()<0.5?0:rect.width-8) : Math.random()*rect.width*0.2;
+        const y = vertical? Math.random()*rect.height*0.2 : (Math.random()<0.5?0:rect.height-8);
+        const vx = vertical? (x===0? speed: -speed) : 0;
+        const vy = vertical? 0 : (y===0? speed: -speed);
+        el.style.left=x+"px"; el.style.top=y+"px";
+        document.getElementById("battlebox").appendChild(el);
+        projs.push({ el, x, y, vx, vy, w: vertical?8:rect.width*0.8, h: vertical?rect.height*0.8:8 });
+      }
+    } else {
+      // Gaster Blasters — beams toggling on/off
+      for(let i=0;i<5;i++){
+        const el=document.createElement("div");
+        el.className="beam";
+        const vertical = Math.random()<0.5;
+        if(vertical){
+          el.style.width="10px"; el.style.height=rect.height+"px"; el.style.left=(Math.random()*rect.width)+"px"; el.style.top="0px";
+        } else {
+          el.style.height="10px"; el.style.width=rect.width+"px"; el.style.top=(Math.random()*rect.height)+"px"; el.style.left="0px";
+        }
+        document.getElementById("battlebox").appendChild(el);
+        beams.push({ el, x: parseFloat(el.style.left)||rect.width/2, y: parseFloat(el.style.top)||rect.height/2, w: vertical?10:rect.width, h: vertical?rect.height:10, t:0 });
+      }
+      // Add some drifting bones too
+      for(let i=0;i<10;i++){
+        const el=document.createElement("div");
+        el.className="proj"; el.style.width="18px"; el.style.height="6px"; el.style.background="#ddd";
+        const x=Math.random()*rect.width, y=Math.random()*rect.height;
+        const vx=(Math.random()<0.5?-1:1)* (40+Math.random()*60);
+        const vy=(Math.random()<0.5?-1:1)* (40+Math.random()*60);
+        el.style.left=x+"px"; el.style.top=y+"px";
+        document.getElementById("battlebox").appendChild(el);
+        projs.push({ el, x, y, vx, vy, w:18, h:6 });
+      }
+    }
+  }
+  function nearestHazard(soul, projs, beams){
+    let best=null, dmin=Infinity;
+    projs.forEach(p=>{
+      const cx=p.x+p.w/2, cy=p.y+p.h/2;
+      const d=Math.hypot(soul.x-cx, soul.y-cy);
+      if(d<dmin){ dmin=d; best={ x:cx, y:cy }; }
+    });
+    beams.forEach(b=>{
+      const cx=b.x+b.w/2, cy=b.y+b.h/2;
+      const d=Math.hypot(soul.x-cx, soul.y-cy);
+      if(d<dmin){ dmin=d; best={ x:cx, y:cy }; }
+    });
+    return best;
+  }
+  function colliding(soul, projs, beams){
+    const sx=soul.x, sy=soul.y, sw=18, sh=18;
+    for(const p of projs){
+      if(rectsOverlap(sx,sy,sw,sh, p.x,p.y,p.w,p.h)) return true;
+    }
+    for(const b of beams){
+      if(rectsOverlap(sx,sy,sw,sh, b.x,b.y,b.w,b.h) && parseFloat(b.el.style.opacity)>0.5) return true;
+    }
+    return false;
+  }
+  function rectsOverlap(x1,y1,w1,h1, x2,y2,w2,h2){
+    return !(x1+w1<x2 || x2+w2<x1 || y1+h1<y2 || y2+h2<y1);
+  }
+
+  // Events
   document.getElementById("newMatchBtn").addEventListener("click", newMatch);
 
-  // Init first match
+  // Init
   newMatch();
 })();
 </script>
