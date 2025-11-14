@@ -8,109 +8,110 @@
       background: black;
       font-family: 'Courier New', monospace;
       color: white;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
 
-    .game-area {
+    .card-container {
       display: flex;
-      justify-content: space-around;
-      margin-top: 40px;
+      gap: 20px;
+      flex-wrap: wrap;
     }
 
     .card {
       background: #111;
       border: 4px solid white;
-      padding: 20px;
-      width: 200px;
+      border-radius: 12px;
+      padding: 15px;
+      width: 180px;
+      text-align: center;
       box-shadow: 0 0 10px white;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: rotateY(10deg) scale(1.05);
+      box-shadow: 0 0 25px #ff0000;
+      border-color: #ff0000;
     }
 
     .card img {
       width: 100px;
       height: 100px;
       image-rendering: pixelated;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      margin-bottom: 10px;
     }
 
     .card-title {
       font-size: 18px;
-      margin-top: 10px;
       text-transform: uppercase;
+      font-weight: bold;
     }
 
-    .stats {
-      margin-top: 10px;
+    .card-desc {
       font-size: 14px;
+      margin-top: 5px;
       color: #ccc;
     }
 
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-family: inherit;
+    /* Game-like stats area */
+    .card-stats {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-around;
+      font-size: 14px;
+    }
+
+    .stat {
       background: #222;
-      color: white;
-      border: 2px solid white;
-      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1px solid #555;
     }
 
-    button:hover {
-      background: #ff0000;
-      border-color: #ff0000;
-    }
-
-    #result {
-      margin-top: 30px;
-      font-size: 20px;
-      color: #ff0000;
-    }
+    /* Rarity colors */
+    .rare { border-color: gold; box-shadow: 0 0 15px gold; }
+    .epic { border-color: purple; box-shadow: 0 0 15px purple; }
+    .common { border-color: gray; }
   </style>
 </head>
 <body>
-  <h1>Undertale Card Battle</h1>
-  <div class="game-area">
-    <div id="player-card" class="card"></div>
-    <div id="enemy-card" class="card"></div>
+  <div class="card-container">
+    <div class="card rare">
+      <img src="https://placekitten.com/100/100" alt="Character">
+      <div class="card-title">Sans</div>
+      <div class="card-desc">Lazy skeleton with bad puns.</div>
+      <div class="card-stats">
+        <div class="stat">ATK: 5</div>
+        <div class="stat">DEF: 3</div>
+      </div>
+    </div>
+
+    <div class="card epic">
+      <img src="https://placebear.com/100/100" alt="Character">
+      <div class="card-title">Papyrus</div>
+      <div class="card-desc">Energetic skeleton who loves spaghetti.</div>
+      <div class="card-stats">
+        <div class="stat">ATK: 7</div>
+        <div class="stat">DEF: 6</div>
+      </div>
+    </div>
+
+    <div class="card common">
+      <img src="https://placebeard.it/100x100" alt="Character">
+      <div class="card-title">Flowey</div>
+      <div class="card-desc">A flower with a sinister smile.</div>
+      <div class="card-stats">
+        <div class="stat">ATK: 4</div>
+        <div class="stat">DEF: 2</div>
+      </div>
+    </div>
   </div>
-  <button onclick="playRound()">Draw Cards</button>
-  <div id="result"></div>
-
-  <script>
-    const deck = [
-      { name: "Sans", img: "https://placekitten.com/100/100", atk: 7, def: 5 },
-      { name: "Papyrus", img: "https://placebear.com/100/100", atk: 5, def: 8 },
-      { name: "Flowey", img: "https://placebeard.it/100x100", atk: 9, def: 3 },
-      { name: "Toriel", img: "https://placekitten.com/101/101", atk: 6, def: 7 },
-      { name: "Undyne", img: "https://placebear.com/101/101", atk: 8, def: 6 }
-    ];
-
-    function drawCard() {
-      return deck[Math.floor(Math.random() * deck.length)];
-    }
-
-    function renderCard(card, elementId) {
-      document.getElementById(elementId).innerHTML = `
-        <img src="${card.img}" alt="${card.name}">
-        <div class="card-title">${card.name}</div>
-        <div class="stats">ATK: ${card.atk} | DEF: ${card.def}</div>
-      `;
-    }
-
-    function playRound() {
-      const player = drawCard();
-      const enemy = drawCard();
-      renderCard(player, "player-card");
-      renderCard(enemy, "enemy-card");
-
-      let resultText = "";
-      if (player.atk > enemy.def) {
-        resultText = `${player.name} wins the round!`;
-      } else if (enemy.atk > player.def) {
-        resultText = `${enemy.name} wins the round!`;
-      } else {
-        resultText = "It's a tie!";
-      }
-      document.getElementById("result").textContent = resultText;
-    }
-  </script>
 </body>
 </html>
