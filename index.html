@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Undertale Card Battle</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Undertale Card Battle</h1>
+  <div class="subtitle">Characters, Magic, Items, and Options — with HP bars and Sans’s stamina dodge.</div>
+
+  <div class="top-bar">
+    <div class="char-badge" id="player-character">Player: —</div>
+    <div class="char-badge" id="ai-character">AI: —</div>
+  </div>
+
+  <div class="battlefield">
+    <!-- Player Zone -->
+    <div class="zone" id="player-zone">
+      <div class="zone-title">Player Zone</div>
+      <div class="meters">
+        <div class="bar-label">HP</div>
+        <div class="hp-bar"><div class="hp-fill" id="player-hp"></div></div>
+        <div class="bar-label" id="player-stamina-label" style="display:none;">Stamina</div>
+        <div class="stamina-bar" id="player-stamina-bar" style="display:none;">
+          <div class="stamina-fill" id="player-stamina"></div>
+        </div>
+      </div>
+      <div class="card-play-area" id="player-slots">
+        <div class="slot" data-slot="p-1">Drop card here</div>
+        <div class="slot" data-slot="p-2">Drop card here</div>
+        <div class="slot" data-slot="p-3">Drop card here</div>
+      </div>
+    </div>
+
+    <!-- AI Zone -->
+    <div class="zone" id="ai-zone">
+      <div class="zone-title">AI Zone</div>
+      <div class="meters">
+        <div class="bar-label">HP</div>
+        <div class="hp-bar"><div class="hp-fill" id="ai-hp"></div></div>
+        <div class="bar-label" id="ai-stamina-label" style="display:none;">Stamina</div>
+        <div class="stamina-bar" id="ai-stamina-bar" style="display:none;">
+          <div class="stamina-fill" id="ai-stamina"></div>
+        </div>
+      </div>
+      <div class="card-play-area" id="ai-slots">
+        <div class="slot" data-slot="a-1">AI will play here</div>
+        <div class="slot" data-slot="a-2">AI will play here</div>
+        <div class="slot" data-slot="a-3">AI will play here</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hand-wrapper">
+    <div class="hand-title">Your Hand</div>
+    <div class="card-container" id="player-hand"></div>
+  </div>
+
+  <div class="controls">
+    <button id="end-turn">End Turn</button>
+    <button id="ai-play">AI Play</button>
+    <button id="reset">Reset Game</button>
+  </div>
+
+  <div id="result"></div>
+  <div class="log" id="log"></div>
+
+  <!-- Load cards first -->
+  <script src="cards.js"></script>
+  <!-- Main game logic -->
+  <script src="game.js"></script>
+</body>
+</html>
