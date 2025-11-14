@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Undertale Card Duel — Battlebox Edition</title>
+<title>Undertale Card Duel — Battlebox Edition (Fixed)</title>
 <style>
   :root{
     --bg1:#0b1020; --bg2:#121a35; --panel:#0f172a; --border:#1f2937; --muted:#94a3b8; --text:#e5e7eb;
@@ -12,18 +12,17 @@
   }
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:system-ui, Arial, sans-serif; background:linear-gradient(180deg,var(--bg1),var(--bg2)); color:var(--text); }
-  header{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; background:linear-gradient(180deg,#0b1020,#121a35); z-index:3; }
+  header{
+    display:flex; align-items:center; justify-content:space-between; padding:12px 16px;
+    border-bottom:1px solid var(--border); position:sticky; top:0; background:linear-gradient(180deg,#0b1020,#121a35); z-index:3;
+  }
   .title{ font-weight:800; letter-spacing:0.6px; font-size:clamp(16px,3vw,20px); }
   .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   button{ background:#182238; color:var(--text); border:1px solid var(--gray); padding:10px 12px; border-radius:10px; font-size:clamp(12px,2.8vw,14px); }
-  button:active{ transform:scale(0.98); }
   button:hover{ background:#22304c; }
   .badge{ display:inline-block; padding:6px 10px; border:1px solid var(--gray); border-radius:999px; background:#111827; color:#cbd5e1; font-size:clamp(12px,2.8vw,13px); }
   main{ display:grid; grid-template-columns: 1fr 380px; gap:12px; padding:12px; }
-  @media (max-width: 880px){
-    main{ grid-template-columns: 1fr; }
-    aside.panel{ order: -1; }
-  }
+  @media (max-width: 880px){ main{ grid-template-columns: 1fr; } aside.panel{ order: -1; } }
 
   .board{ display:grid; gap:12px; }
   .hand{ display:flex; flex-wrap:wrap; gap:10px; min-height:160px; padding:10px; border:1px solid var(--border); border-radius:12px; background:var(--panel); }
@@ -70,24 +69,18 @@
     height:clamp(200px, 60vh, 420px);
     background:#000; border:3px solid #fff; position:relative; overflow:hidden; border-radius:12px;
   }
-  .soul{
-    position:absolute; width:18px; height:18px; background:#ff0000; border-radius:4px; box-shadow:0 0 8px 2px #ff6b6b;
-  }
+  .soul{ position:absolute; width:18px; height:18px; background:#ff0000; border-radius:4px; box-shadow:0 0 8px 2px #ff6b6b; }
   .proj{ position:absolute; background:#cccccc; }
   .beam{ position:absolute; background:#a7f3d0; opacity:0.9; }
   .hud{
     position:absolute; left:8px; top:8px; z-index:2; color:#fff; font-size:clamp(12px,3vw,14px); display:flex; gap:8px;
     background:#0008; padding:6px 8px; border-radius:8px; border:1px solid #fff3;
   }
-  .mobile-controls{
-    display:none; position:absolute; right:8px; bottom:8px; z-index:2; gap:8px;
-  }
+  .mobile-controls{ display:none; position:absolute; right:8px; bottom:8px; z-index:2; gap:8px; }
   .mobile-controls button{
     width:56px; height:56px; border-radius:50%; background:#182238; border:1px solid var(--gray); color:#fff; font-weight:800;
   }
-  @media (pointer:coarse){
-    .mobile-controls{ display:flex; }
-  }
+  @media (pointer:coarse){ .mobile-controls{ display:flex; } }
 </style>
 </head>
 <body>
@@ -96,7 +89,7 @@
   <div class="controls">
     <button id="newMatchBtn">New match</button>
     <span class="badge" id="turnBadge">Your turn</span>
-    <span class="badge" id="loveBadge">LOVE: 1 (EXP 0)</span>
+    <span class="badge" id="loveBadge">LOVE: 1 (EXP 0, Spared 0)</span>
   </div>
 </header>
 
@@ -161,12 +154,20 @@
 
 <script>
 (function(){
+  // Safe crypto UUID fallback
+  function uuid(){
+    const c = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : ('xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(ch){
+      const r = Math.random()*16|0, v = ch==='x'?r:(r&0x3|0x8); return v.toString(16);
+    }));
+    return c;
+  }
+
   // Persistent progression
-  const SAVE_KEY = "undertale_card_progress_v2";
+  const SAVE_KEY = "undertale_card_progress_v3";
   const defaultProgress = { love:1, exp:0, spared:0 };
   const progress = loadProgress();
 
-  // LOVE mapping to stats
+  // LOVE mapping
   const LOVE_TABLE = [
     { lv:1, total:0, next:10, hp:20, atk:0, def:0, weapon:"Stick (1 atk)", route:"PACIFIST-ish" },
     { lv:2, total:10, next:20, hp:24, atk:2, def:0, route:"NEUTRAL-ish" },
@@ -201,13 +202,12 @@
     deck:{ player:[], opponent:[] },
     playerHand:[], opponentHand:[],
     turn:"player", locked:false,
-    flags:{ pieUsed:false, snowmanPiecesUsed:0 },
+    flags:{ pieUsed:false, snowmanPiecesUsed:0, lostSoul:null }
   };
 
-  // Cards
+  // Card factory
   const makeCard = (name, cat, owner, effect, desc, opts={})=>({
-    id: crypto.randomUUID(), name, cat, owner, effect, desc,
-    rarity: opts.rarity||null, cost: opts.cost||0
+    id: uuid(), name, cat, owner, effect, desc, rarity: opts.rarity||null, cost: opts.cost||0
   });
 
   // Frisk pools
@@ -252,65 +252,39 @@
   function buildDecks(){
     const playerPool = [];
     const opponentPool = [];
-
     const loveInfo = getLoveInfo(progress.love);
-    const loveLV = loveInfo.lv;
+    const lv = loveInfo.lv;
 
-    // Helper: include FIGHT guaranteed once at LV 19–20
-    const ensureFight = (pool, role)=>{
-      if(role!=="Frisk") return;
+    function ensureFight(pool){
       const hasFight = pool.some(c=>c.name==="FIGHT");
-      if(!hasFight) pool.push(friskOptions.find(c=>c.name==="FIGHT"));
-    };
+      if(!hasFight){ pool.push(friskOptions.find(c=>c.name==="FIGHT")); }
+    }
 
-    // Player role
     if(state.playerRole==="Frisk"){
       let pItems = friskItems.slice();
-
-      // GENOCIDE restriction for Frisk at very high LOVE: remove Hot Dog/Astronaut Food
-      if(loveLV>=19){
-        pItems = pItems.filter(c=> !["Hot Dog...?", "Astronaut Food"].includes(c.name));
-      }
-
-      // Legendary Hero bias when LOVE≥18
-      if(loveLV>=18){
-        const leg = friskItems.find(c=>c.name==="Legendary Hero");
-        if(leg) pItems.push(leg);
-      }
-
+      if(lv>=19){ pItems = pItems.filter(c=> !["Hot Dog...?", "Astronaut Food"].includes(c.name)); }
+      if(lv>=18){ const leg = friskItems.find(c=>c.name==="Legendary Hero"); if(leg) pItems.push(leg); }
       playerPool.push(...pItems, ...friskOptions);
-
-      // TRUE PACIFIST flavor if spared count high and LOVE==1: remove FIGHT, add SAVE
       if(progress.love===1 && progress.spared>=50){
         const withoutFight = playerPool.filter(c=>c.name!=="FIGHT");
-        playerPool.length = 0;
-        playerPool.push(...withoutFight, ...friskTruePacifistOnly);
+        playerPool.length=0; playerPool.push(...withoutFight, ...friskTruePacifistOnly);
       }
-
-      // Guarantee one FIGHT at LV 19–20
-      if(loveLV>=19) ensureFight(playerPool, "Frisk");
-
-    } else { // Player Sans
+      if(lv>=19) ensureFight(playerPool);
+    } else {
       playerPool.push(...sansItems, ...sansOptions, ...sansMagic);
     }
 
-    // Opponent role
     if(state.opponentRole==="Frisk"){
       let oItems = friskItems.slice();
-      if(loveLV>=19){
-        oItems = oItems.filter(c=> !["Hot Dog...?", "Astronaut Food"].includes(c.name));
-      }
-      if(loveLV>=18){
-        const leg = friskItems.find(c=>c.name==="Legendary Hero");
-        if(leg) oItems.push(leg);
-      }
+      const enemyLV = Math.min(18, Math.max(1, progress.love));
+      if(enemyLV>=19){ oItems = oItems.filter(c=> !["Hot Dog...?", "Astronaut Food"].includes(c.name)); }
+      if(enemyLV>=18){ const leg = friskItems.find(c=>c.name==="Legendary Hero"); if(leg) oItems.push(leg); }
       opponentPool.push(...oItems, ...friskOptions);
       if(progress.love===1 && progress.spared>=50){
         const withoutFight = opponentPool.filter(c=>c.name!=="FIGHT");
-        opponentPool.length = 0;
-        opponentPool.push(...withoutFight, ...friskTruePacifistOnly);
+        opponentPool.length=0; opponentPool.push(...withoutFight, ...friskTruePacifistOnly);
       }
-      if(loveLV>=19) ensureFight(opponentPool, "Frisk");
+      if(enemyLV>=19) ensureFight(opponentPool);
     } else {
       opponentPool.push(...sansItems, ...sansOptions, ...sansMagic);
     }
@@ -318,9 +292,9 @@
     return { playerDeck: shuffle(playerPool), opponentDeck: shuffle(opponentPool) };
   }
 
-  // Init match
+  // New match
   function newMatch(){
-    // Random roles
+    // Roles
     if(Math.random()<0.5){ state.playerRole="Frisk"; state.opponentRole="Sans"; }
     else { state.playerRole="Sans"; state.opponentRole="Frisk"; }
 
@@ -332,7 +306,7 @@
       state.player = { hp:1, maxHP:1, st:100, maxST:100, atk:0, def:0 };
     }
     if(state.opponentRole==="Frisk"){
-      const enemyLV = Math.min(18, Math.max(1, progress.love)); // scale AI roughly
+      const enemyLV = Math.min(18, Math.max(1, progress.love));
       const li = getLoveInfo(enemyLV);
       state.opponent = { hp:li.hp, maxHP:li.hp, st:0, maxST:0, atk:li.atk, def:li.def, love:enemyLV, exp:0, weapon:li.weapon||"Stick (1 atk)" };
     } else {
@@ -342,45 +316,37 @@
     // Reset flags
     state.flags.pieUsed=false;
     state.flags.snowmanPiecesUsed=0;
+    state.flags.lostSoul=null;
     state.turn="player";
     state.locked=false;
 
-    // Build decks + draw
-    const { playerDeck, opponentDeck } = buildDecks();
-    state.deck.player = playerDeck;
-    state.deck.opponent = opponentDeck;
-    state.playerHand = [];
-    state.opponentHand = [];
+    const decks = buildDecks();
+    state.deck.player = decks.playerDeck;
+    state.deck.opponent = decks.opponentDeck;
+    state.playerHand = []; state.opponentHand = [];
     drawCards("player", 5);
     drawCards("opponent", 5);
 
-    clearLog();
-    log(`Match start. You are ${state.playerRole}.`);
-    renderAll();
-    updateTurnBadge();
-    updateLoveBadge();
+    clearLog(); log(`Match start. You are ${state.playerRole}.`);
+    renderAll(); updateTurnBadge(); updateLoveBadge();
   }
 
-  // Utils
+  // Utilities
   function getLoveInfo(lv){ return LOVE_TABLE.find(e=>e.lv===lv) || LOVE_TABLE[0]; }
   function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
   function loadProgress(){
-    try{
-      const raw = localStorage.getItem(SAVE_KEY);
-      if(!raw) return {...defaultProgress};
-      const p = JSON.parse(raw);
-      return { love: p.love||1, exp:p.exp||0, spared:p.spared||0 };
-    }catch(e){ return {...defaultProgress}; }
+    try{ const raw=localStorage.getItem(SAVE_KEY); if(!raw) return {...defaultProgress};
+      const p=JSON.parse(raw); return { love:p.love||1, exp:p.exp||0, spared:p.spared||0 };
+    } catch(e){ return {...defaultProgress}; }
   }
   function saveProgress(){ localStorage.setItem(SAVE_KEY, JSON.stringify(progress)); }
   function checkLevelUp(){
-    let lv = progress.love;
-    let changed=false;
+    let lv = progress.love; let changed=false;
     while(true){
-      const entry = getLoveInfo(lv);
-      if(entry.next===null) break;
-      const needed = entry.total + entry.next;
-      if(progress.exp >= needed){ lv++; changed=true; } else break;
+      const e=getLoveInfo(lv);
+      if(e.next===null) break;
+      const need = e.total + e.next;
+      if(progress.exp>=need){ lv++; changed=true; } else break;
     }
     if(changed){ progress.love=Math.min(20, lv); log(`LOVE increased to LV ${progress.love}.`); saveProgress(); updateLoveBadge(); }
   }
@@ -392,30 +358,29 @@
     renderHands();
   }
 
-  // Apply attack with Sans dodge rule (not for Frisk FIGHT)
+  // Attack with Sans dodge rule (bypass for Frisk FIGHT)
   function applyAttack(targetSide, hits, dmgPerHit, source, opts={}){
     const target = state[targetSide];
     const targetIsSans = (targetSide==="player" && state.playerRole==="Sans") || (targetSide==="opponent" && state.opponentRole==="Sans");
-    const bypassDodge = !!opts.bypassDodge; // true for Frisk FIGHT
-    let totalDamage=0;
+    const bypassDodge = !!opts.bypassDodge;
+    let totalDamage = 0;
 
     for(let h=0; h<hits; h++){
       if(targetIsSans && !bypassDodge){
         if(target.st>=10){
-          target.st-=10;
+          target.st -= 10;
           log(`Sans dodged (−10 ST).`);
         } else {
-          target.hp=Math.max(0, target.hp - dmgPerHit);
-          totalDamage+=dmgPerHit;
+          target.hp = Math.max(0, target.hp - dmgPerHit);
+          totalDamage += dmgPerHit;
         }
       } else {
-        target.hp=Math.max(0, target.hp - dmgPerHit);
-        totalDamage+=dmgPerHit;
+        target.hp = Math.max(0, target.hp - dmgPerHit);
+        totalDamage += dmgPerHit;
       }
     }
     if(totalDamage>0) log(`${source} dealt ${totalDamage} damage.`);
-    renderBars();
-    checkWin();
+    renderBars(); checkWin();
   }
 
   // Card play
@@ -428,21 +393,15 @@
     const card = hand[idx];
     const role = state[who+"Role"];
 
-    // Ownership
     if(card.owner !== role){ flashIllegal(cardId); return; }
-    // Frisk cannot use MAGIC
     if(role==="Frisk" && card.cat===CAT.MAGIC){ log("Frisk cannot use MAGIC."); flashIllegal(cardId); return; }
-    // Cost (for Sans’ cards only if used later)
-    if(card.cost && state[who].st<card.cost){ log(`${role} lacks stamina (${card.cost}).`); flashIllegal(cardId); return; }
-    // Pie once, Snowman max 4
+    if(card.cost && state[who].st < card.cost){ log(`${role} lacks stamina (${card.cost}).`); flashIllegal(cardId); return; }
     if(role==="Frisk" && card.name==="Butterscotch Pie" && state.flags.pieUsed){ log("Pie can be used only once per match."); flashIllegal(cardId); return; }
     if(role==="Frisk" && card.name==="Snowman Piece" && state.flags.snowmanPiecesUsed>=4){ log("Snowman Piece limit reached (4 per match)."); flashIllegal(cardId); return; }
 
-    // Consume and resolve
     hand.splice(idx,1);
     renderHands();
     await resolveCard(who, card);
-
     endTurn(who);
   }
 
@@ -452,7 +411,6 @@
     const target = state[targetSide];
     const actor = who==="player"?"You":"AI";
     const meRole = state[who+"Role"];
-    const targetRole = state[targetSide+"Role"];
 
     // ITEMS
     if(card.cat===CAT.ITEMS){
@@ -471,7 +429,6 @@
     // OPTIONS
     if(card.cat===CAT.OPTIONS){
       if(card.effect.fight){
-        // Frisk FIGHT: ignore Sans dodge
         const loveInfo = (meRole==="Frisk")? getLoveInfo(me.love||progress.love):{atk:0};
         const weaponAtk = parseWeaponAtk(me.weapon);
         const base = (loveInfo.atk||0) + weaponAtk;
@@ -514,7 +471,7 @@
     if(card.cat===CAT.MAGIC){
       const pattern = card.effect.pattern;
       const duration = card.effect.duration || 3000;
-      const targetIsPlayer = (who==="opponent"); // opponent played → player must dodge
+      const targetIsPlayer = (who==="opponent");
       await runBattlebox({ pattern, duration, targetSide: targetIsPlayer ? "player" : "opponent" });
     }
   }
@@ -528,7 +485,6 @@
     });
   }
   function trySpare(){
-    // LOVE=1 boosts mercy chance; high LOVE reduces
     const lv = progress.love;
     const base = lv===1 ? 0.6 : lv<10 ? 0.3 : lv<18 ? 0.2 : 0.0;
     return Math.random() < base;
@@ -538,10 +494,10 @@
     if(lv>=19) return false;
     return Math.random() < 0.5;
   }
+  function pickLostSoul(){ const pool=["Sans","Papyrus","Undyne","Toriel","Alphys","Asgore"]; return pool[Math.floor(Math.random()*pool.length)]; }
 
-  // End turn, regen, nap, lost soul assist
+  // End turn
   function endTurn(who){
-    // Lost soul assist: small 50% chip
     if(state.flags.lostSoul && state.flags.lostSoul.hp>0){
       if(Math.random()<0.5){
         const targetSide = (who==="player")?"opponent":"player";
@@ -554,7 +510,6 @@
       }
     }
 
-    // Swap turns + Sans stamina regen
     if(who==="player"){
       state.turn="opponent";
       if(state.opponentRole==="Sans"){ state.opponent.st=Math.min(state.opponent.maxST, state.opponent.st+2); }
@@ -562,21 +517,17 @@
       state.turn="player";
       if(state.playerRole==="Sans"){ state.player.st=Math.min(state.player.maxST, state.player.st+2); }
     }
-    updateTurnBadge();
-    renderBars();
+    updateTurnBadge(); renderBars();
 
-    // Nap skip chain
     const actorKey = state.turn==="player" ? "player" : "opponent";
     const actor = state[actorKey];
     if(actor.napTurns && actor.napTurns>0){
       actor.napTurns--;
       log(`${state[actorKey+"Role"]} is napping. Turn skipped.`);
       if(actor.napTurns===0){ actor.hp=actor.maxHP; log(`${state[actorKey+"Role"]} wakes fully healed.`); renderBars(); }
-      endTurn(state.turn);
-      return;
+      endTurn(state.turn); return;
     }
 
-    // AI turn
     if(state.turn==="opponent"){ aiTurn(); }
   }
 
@@ -585,8 +536,7 @@
     if(state.opponent.hp<=0){
       if(state.playerRole==="Frisk"){
         const expGain = expForKill(state.opponent.maxHP);
-        progress.exp += expGain; log(`You gained ${expGain} EXP.`);
-        saveProgress(); checkLevelUp();
+        progress.exp += expGain; log(`You gained ${expGain} EXP.`); saveProgress(); checkLevelUp();
       }
       endGame("player_win"); return true;
     }
@@ -619,15 +569,15 @@
       if(who==="player"){
         div.setAttribute("draggable","true");
         if(state.turn==="player" && !state.locked) div.classList.add("playable");
-        div.addEventListener("dragstart", e=>{
+        div.addEventListener("dragstart", function(e){
           if(state.turn!=="player" || state.locked){ e.preventDefault(); return; }
           e.dataTransfer.setData("text/plain", card.id);
         });
-        let taps=0; div.addEventListener("click", ()=>{
-          taps++; setTimeout(()=>{ taps=0; }, 300);
+        let taps=0; div.addEventListener("click", function(){
+          taps++; setTimeout(()=>{ taps=0; }, 250);
           if(taps>=2) playCard("player", card.id);
         });
-        div.addEventListener("dblclick", ()=> playCard("player", card.id));
+        div.addEventListener("dblclick", function(){ playCard("player", card.id); });
       }
       div.dataset.id = card.id;
       container.appendChild(div);
@@ -637,10 +587,11 @@
     const pHPB=document.getElementById("playerHPBar"), oHPB=document.getElementById("opponentHPBar");
     const pSTB=document.getElementById("playerSTBar"), oSTB=document.getElementById("opponentSTBar");
     const p=state.player, o=state.opponent;
-    pHPB.style.width = Math.round(100*p.hp/p.maxHP)+"%";
-    oHPB.style.width = Math.round(100*o.hp/o.maxHP)+"%";
-    pSTB.style.width = p.maxST? Math.round(100*p.st/p.maxST)+"%":"0%";
-    oSTB.style.width = o.maxST? Math.round(100  o.st/o.maxST)+"%":"0%";
+    const pct = (val,max)=> Math.round(100*val/Math.max(1,max));
+    pHPB.style.width = pct(p.hp, p.maxHP)+"%";
+    oHPB.style.width = pct(o.hp, o.maxHP)+"%";
+    pSTB.style.width = p.maxST? pct(p.st, p.maxST)+"%":"0%";
+    oSTB.style.width = o.maxST? pct(o.st, o.maxST)+"%":"0%";
     document.getElementById("playerHPText").textContent=`${p.hp}/${p.maxHP}`;
     document.getElementById("opponentHPText").textContent=`${o.hp}/${o.maxHP}`;
     document.getElementById("playerSTText").textContent=`${p.st}/${p.maxST}`;
@@ -672,8 +623,8 @@
 
   // Drag target
   const pileArea=document.getElementById("pileArea");
-  pileArea.addEventListener("dragover", e=> e.preventDefault());
-  pileArea.addEventListener("drop", e=>{
+  pileArea.addEventListener("dragover", function(e){ e.preventDefault(); });
+  pileArea.addEventListener("drop", function(e){
     e.preventDefault();
     if(state.turn!=="player" || state.locked) return;
     const id=e.dataTransfer.getData("text/plain");
@@ -681,7 +632,7 @@
   });
 
   // Draw click
-  document.getElementById("drawDeck").addEventListener("click", ()=>{
+  document.getElementById("drawDeck").addEventListener("click", function(){
     if(state.turn!=="player" || state.locked) return;
     drawCards("player",1);
   });
@@ -690,21 +641,17 @@
   async function aiTurn(){
     state.locked=true;
     await sleep(500);
-
     const hand=state.opponentHand;
     let choice=null;
 
     if(state.opponentRole==="Sans"){
-      // Prefer Gaster → Bars → Bones
       const order=["Gaster Blaster","Bone Jumps","Bone Throw"];
       choice = hand.find(c=> c.cat===CAT.MAGIC && order.includes(c.name)) || hand.find(c=>c.cat===CAT.MAGIC);
       if(!choice){
-        // Heal if low stamina or HP
         if(state.opponent.st<30 || state.opponent.hp<state.opponent.maxHP*0.5) choice=hand.find(c=>c.cat===CAT.ITEMS);
       }
       if(!choice) choice = hand.find(c=> c.cat===CAT.OPTIONS && c.effect.nap) || hand[0];
     } else {
-      // Frisk: FIGHT first, else heal, else MERCY if LOVE low
       choice = hand.find(c=> c.name==="FIGHT");
       if(!choice && state.opponent.hp < Math.ceil(state.opponent.maxHP*0.6)){
         const heals = hand.filter(c=>c.cat===CAT.ITEMS);
@@ -714,11 +661,8 @@
       if(!choice) choice = hand[0];
     }
 
-    if(choice){ await playCard("opponent", choice.id); }
-    else { log("Opponent passes."); }
-
-    state.locked=false;
-    renderAll();
+    if(choice){ await playCard("opponent", choice.id); } else { log("Opponent passes."); }
+    state.locked=false; renderAll();
   }
   function valueHeal(card){ if(card.effect.healFull) return 999; return card.effect.heal||0; }
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
@@ -731,19 +675,19 @@
     const info = document.getElementById("bbInfo");
     const timerEl = document.getElementById("bbTimer");
     overlay.style.display="flex";
-
     info.textContent = patternLabel(pattern);
     timerEl.textContent = (duration/1000).toFixed(1)+"s";
 
-    // Position soul center
+    // Center soul
     const boxRect = box.getBoundingClientRect();
-    const stateSoul = { x: boxRect.width/2 - 9, y: boxRect.height/2 - 9, vx:0, vy:0, speed: 140 }; // px/s
+    const soulState = { x: boxRect.width/2 - 9, y: boxRect.height/2 - 9, vx:0, vy:0, speed: 140 };
     placeSoul();
 
-    // Controls (player vs AI)
     const targetIsPlayer = (targetSide==="player");
-    let keys = { up:false, down:false, left:false, right:false };
-    function onKey(e, val){
+    const keys = { up:false, down:false, left:false, right:false };
+    function keyDownHandler(e){ setKey(e, true); }
+    function keyUpHandler(e){ setKey(e, false); }
+    function setKey(e, val){
       const k=e.key.toLowerCase();
       if(k==="arrowup"||k==="w") keys.up=val;
       if(k==="arrowdown"||k==="s") keys.down=val;
@@ -751,25 +695,22 @@
       if(k==="arrowright"||k==="d") keys.right=val;
     }
     if(targetIsPlayer){
-      window.addEventListener("keydown", e=>onKey(e,true));
-      window.addEventListener("keyup", e=>onKey(e,false));
+      window.addEventListener("keydown", keyDownHandler);
+      window.addEventListener("keyup", keyUpHandler);
     }
 
-    // Mobile buttons
+    // Mobile controls
     const mc = box.querySelector(".mobile-controls");
     const btns = mc.querySelectorAll("button");
     const touchState = { up:false,down:false,left:false,right:false };
-    btns.forEach(b=>{
-      b.addEventListener("touchstart", e=>{ e.preventDefault(); touchState[b.dataset.dir]=true; });
-      b.addEventListener("touchend", e=>{ e.preventDefault(); touchState[b.dataset.dir]=false; });
-    });
+    function touchStart(e){ e.preventDefault(); const dir=e.currentTarget.dataset.dir; touchState[dir]=true; }
+    function touchEnd(e){ e.preventDefault(); const dir=e.currentTarget.dataset.dir; touchState[dir]=false; }
+    btns.forEach(b=>{ b.addEventListener("touchstart", touchStart, {passive:false}); b.addEventListener("touchend", touchEnd, {passive:false}); });
 
-    // Projectiles
-    const projs = [];
-    const beams = [];
+    // Hazards
+    const projs = []; const beams = [];
     spawnPattern(pattern, projs, beams, boxRect);
 
-    // Loop
     let last = performance.now();
     let elapsed = 0;
     let running = true;
@@ -777,11 +718,9 @@
     await new Promise(resolve=>{
       function step(now){
         if(!running) return;
-        const dt = Math.min(0.033, (now-last)/1000); // cap dt ~33ms
+        const dt = Math.min(0.033, (now-last)/1000);
         last=now; elapsed += dt*1000;
-        // Update timer
-        const remain = Math.max(0, duration - Math.floor(elapsed));
-        timerEl.textContent = (remain/1000).toFixed(1)+"s";
+        timerEl.textContent = (Math.max(0, duration - Math.floor(elapsed))/1000).toFixed(1)+"s";
 
         // Move soul
         if(targetIsPlayer){
@@ -789,23 +728,19 @@
           const down = keys.down || touchState.down;
           const left = keys.left || touchState.left;
           const right = keys.right || touchState.right;
-          stateSoul.vx = (right?1:0) - (left?1:0);
-          stateSoul.vy = (down?1:0) - (up?1:0);
+          soulState.vx = (right?1:0) - (left?1:0);
+          soulState.vy = (down?1:0) - (up?1:0);
         } else {
-          // AI dodge: move away from nearest projectile center
-          const nearest = nearestHazard(stateSoul, projs, beams);
+          const nearest = nearestHazard(soulState, projs, beams);
           if(nearest){
-            const dx = stateSoul.x - nearest.x;
-            const dy = stateSoul.y - nearest.y;
+            const dx = soulState.x - nearest.x;
+            const dy = soulState.y - nearest.y;
             const len = Math.max(1, Math.hypot(dx,dy));
-            stateSoul.vx = dx/len;
-            stateSoul.vy = dy/len;
-          } else {
-            stateSoul.vx = 0; stateSoul.vy = 0;
-          }
+            soulState.vx = dx/len; soulState.vy = dy/len;
+          } else { soulState.vx=0; soulState.vy=0; }
         }
-        stateSoul.x += stateSoul.vx * stateSoul.speed * dt;
-        stateSoul.y += stateSoul.vy * stateSoul.speed * dt;
+        soulState.x += soulState.vx * soulState.speed * dt;
+        soulState.y += soulState.vy * soulState.speed * dt;
         clampSoul();
 
         // Move hazards
@@ -814,44 +749,41 @@
           p.el.style.left = p.x + "px"; p.el.style.top = p.y + "px";
         });
         beams.forEach(b=>{
-          b.t += dt;
-          // simple pulse (on/off)
-          const on = Math.floor(b.t*2)%2===0;
-          b.el.style.opacity = on?0.9:0.2;
+          b.t += dt; b.el.style.opacity = (Math.floor(b.t*2)%2===0)?0.9:0.2;
         });
 
-        // Collision: 1 damage per frame of contact
-        const hit = colliding(stateSoul, projs, beams);
-        if(hit){
+        // Collision
+        if(colliding(soulState, projs, beams)){
           const side = targetSide;
           state[side].hp = Math.max(0, state[side].hp - 1);
           renderBars();
           if(checkWin()){ running=false; cleanup(); resolve(); return; }
         }
 
-        // Finish
-        if(elapsed >= duration){
-          running=false; cleanup(); resolve(); return;
-        }
+        if(elapsed >= duration){ running=false; cleanup(); resolve(); return; }
         requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
     });
 
-    function placeSoul(){ soul.style.left = stateSoul.x+"px"; soul.style.top = stateSoul.y+"px"; }
+    function placeSoul(){ soul.style.left = soulState.x+"px"; soul.style.top = soulState.y+"px"; }
     function clampSoul(){
       const w = boxRect.width, h = boxRect.height;
-      stateSoul.x = Math.max(0, Math.min(w-18, stateSoul.x));
-      stateSoul.y = Math.max(0, Math.min(h-18, stateSoul.y));
+      soulState.x = Math.max(0, Math.min(w-18, soulState.x));
+      soulState.y = Math.max(0, Math.min(h-18, soulState.y));
       placeSoul();
     }
     function cleanup(){
-      // Remove hazards
       projs.forEach(p=> p.el.remove());
       beams.forEach(b=> b.el.remove());
-      // Remove listeners
-      window.removeEventListener("keydown", e=>onKey(e,true));
-      window.removeEventListener("keyup", e=>onKey(e,false));
+      if(targetIsPlayer){
+        window.removeEventListener("keydown", keyDownHandler);
+        window.removeEventListener("keyup", keyUpHandler);
+      }
+      btns.forEach(b=>{
+        b.removeEventListener("touchstart", touchStart);
+        b.removeEventListener("touchend", touchEnd);
+      });
       overlay.style.display="none";
     }
   }
@@ -860,83 +792,69 @@
   function spawnPattern(p, projs, beams, rect){
     const box = document.getElementById("battlebox");
     if(p==="bones"){
-      // Scatter bones moving diagonally
       for(let i=0;i<18;i++){
         const el=document.createElement("div");
         el.className="proj"; el.style.width="24px"; el.style.height="6px"; el.style.background="#ddd";
         const x=Math.random()*rect.width, y=Math.random()*rect.height;
-        const vx=(Math.random()<0.5?-1:1)* (30+Math.random()*60);
-        const vy=(Math.random()<0.5?-1:1)* (30+Math.random()*60);
-        el.style.left=x+"px"; el.style.top=y+"px";
-        box.appendChild(el);
+        const vx=(Math.random()<0.5?-1:1)* (60+Math.random()*80);
+        const vy=(Math.random()<0.5?-1:1)* (60+Math.random()*80);
+        el.style.left=x+"px"; el.style.top=y+"px"; box.appendChild(el);
         projs.push({ el, x, y, vx, vy, w:24, h:6 });
       }
     } else if(p==="bars"){
-      // Sweeping bars from sides
       for(let i=0;i<6;i++){
         const vertical = i%2===0;
         const el=document.createElement("div");
         el.className="proj"; el.style.background="#bbb";
         if(vertical){ el.style.width="8px"; el.style.height=(rect.height*0.8)+"px"; }
         else { el.style.height="8px"; el.style.width=(rect.width*0.8)+"px"; }
-        const speed = 60+Math.random()*80;
+        const speed = 80+Math.random()*80;
         const x = vertical? (Math.random()<0.5?0:rect.width-8) : Math.random()*rect.width*0.2;
         const y = vertical? Math.random()*rect.height*0.2 : (Math.random()<0.5?0:rect.height-8);
         const vx = vertical? (x===0? speed: -speed) : 0;
         const vy = vertical? 0 : (y===0? speed: -speed);
-        el.style.left=x+"px"; el.style.top=y+"px";
-        document.getElementById("battlebox").appendChild(el);
+        el.style.left=x+"px"; el.style.top=y+"px"; box.appendChild(el);
         projs.push({ el, x, y, vx, vy, w: vertical?8:rect.width*0.8, h: vertical?rect.height*0.8:8 });
       }
     } else {
-      // Gaster Blasters — beams toggling on/off
       for(let i=0;i<5;i++){
         const el=document.createElement("div");
         el.className="beam";
         const vertical = Math.random()<0.5;
-        if(vertical){
-          el.style.width="10px"; el.style.height=rect.height+"px"; el.style.left=(Math.random()*rect.width)+"px"; el.style.top="0px";
-        } else {
-          el.style.height="10px"; el.style.width=rect.width+"px"; el.style.top=(Math.random()*rect.height)+"px"; el.style.left="0px";
-        }
-        document.getElementById("battlebox").appendChild(el);
+        if(vertical){ el.style.width="10px"; el.style.height=rect.height+"px"; el.style.left=(Math.random()*rect.width)+"px"; el.style.top="0px"; }
+        else { el.style.height="10px"; el.style.width=rect.width+"px"; el.style.top=(Math.random()*rect.height)+"px"; el.style.left="0px"; }
+        box.appendChild(el);
         beams.push({ el, x: parseFloat(el.style.left)||rect.width/2, y: parseFloat(el.style.top)||rect.height/2, w: vertical?10:rect.width, h: vertical?rect.height:10, t:0 });
       }
-      // Add some drifting bones too
       for(let i=0;i<10;i++){
         const el=document.createElement("div");
         el.className="proj"; el.style.width="18px"; el.style.height="6px"; el.style.background="#ddd";
         const x=Math.random()*rect.width, y=Math.random()*rect.height;
-        const vx=(Math.random()<0.5?-1:1)* (40+Math.random()*60);
-        const vy=(Math.random()<0.5?-1:1)* (40+Math.random()*60);
-        el.style.left=x+"px"; el.style.top=y+"px";
-        document.getElementById("battlebox").appendChild(el);
+        const vx=(Math.random()<0.5?-1:1)* (50+Math.random()*70);
+        const vy=(Math.random()<0.5?-1:1)* (50+Math.random()*70);
+        el.style.left=x+"px"; el.style.top=y+"px"; box.appendChild(el);
         projs.push({ el, x, y, vx, vy, w:18, h:6 });
       }
     }
   }
   function nearestHazard(soul, projs, beams){
     let best=null, dmin=Infinity;
-    projs.forEach(p=>{
+    for(const p of projs){
       const cx=p.x+p.w/2, cy=p.y+p.h/2;
       const d=Math.hypot(soul.x-cx, soul.y-cy);
       if(d<dmin){ dmin=d; best={ x:cx, y:cy }; }
-    });
-    beams.forEach(b=>{
+    }
+    for(const b of beams){
       const cx=b.x+b.w/2, cy=b.y+b.h/2;
       const d=Math.hypot(soul.x-cx, soul.y-cy);
       if(d<dmin){ dmin=d; best={ x:cx, y:cy }; }
-    });
+    }
     return best;
   }
   function colliding(soul, projs, beams){
     const sx=soul.x, sy=soul.y, sw=18, sh=18;
-    for(const p of projs){
-      if(rectsOverlap(sx,sy,sw,sh, p.x,p.y,p.w,p.h)) return true;
-    }
-    for(const b of beams){
-      if(rectsOverlap(sx,sy,sw,sh, b.x,b.y,b.w,b.h) && parseFloat(b.el.style.opacity)>0.5) return true;
-    }
+    for(const p of projs){ if(rectsOverlap(sx,sy,sw,sh, p.x,p.y,p.w,p.h)) return true; }
+    for(const b of beams){ if(rectsOverlap(sx,sy,sw,sh, b.x,b.y,b.w,b.h) && parseFloat(b.el.style.opacity)>0.5) return true; }
     return false;
   }
   function rectsOverlap(x1,y1,w1,h1, x2,y2,w2,h2){
