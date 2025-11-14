@@ -25,46 +25,20 @@
     .battlefield {
       display: flex;
       justify-content: space-around;
-      align-items: flex-start;
+      align-items: center;
       width: 100%;
       margin-top: 30px;
     }
 
     .zone {
       width: 45%;
-      min-height: 220px;
+      height: 200px;
       border: 2px dashed #555;
       border-radius: 12px;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
       color: #777;
-      padding: 10px;
-    }
-
-    .hp-bar, .stamina-bar {
-      width: 80%;
-      height: 20px;
-      background: #333;
-      border: 2px solid white;
-      border-radius: 8px;
-      margin: 5px 0;
-      position: relative;
-    }
-
-    .hp-fill {
-      background: red;
-      height: 100%;
-      border-radius: 6px;
-      width: 100%;
-    }
-
-    .stamina-fill {
-      background: cyan;
-      height: 100%;
-      border-radius: 6px;
-      width: 100%;
     }
 
     .card {
@@ -86,6 +60,15 @@
       border-color: #ff0000;
     }
 
+    .card img {
+      width: 100px;
+      height: 100px;
+      image-rendering: pixelated;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
     .card-title {
       font-size: 18px;
       text-transform: uppercase;
@@ -98,6 +81,20 @@
       color: #ccc;
     }
 
+    .card-stats {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-around;
+      font-size: 14px;
+    }
+
+    .stat {
+      background: #222;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: 1px solid #555;
+    }
+
     .rare { border-color: gold; box-shadow: 0 0 15px gold; }
     .epic { border-color: purple; box-shadow: 0 0 15px purple; }
     .common { border-color: gray; }
@@ -106,10 +103,37 @@
 <body>
   <h1>Undertale Card Battle</h1>
 
-  <div id="player-info"></div>
-  <div id="ai-info"></div>
+  <div class="card-container" id="player-hand">
+    <div class="card rare" draggable="true" data-atk="5" data-def="3">
+      <img src="https://placekitten.com/100/100" alt="Character">
+      <div class="card-title">Sans</div>
+      <div class="card-desc">Lazy skeleton with bad puns.</div>
+      <div class="card-stats">
+        <div class="stat">ATK: 5</div>
+        <div class="stat">DEF: 3</div>
+      </div>
+    </div>
 
-  <div class="card-container" id="player-hand"></div>
+    <div class="card epic" draggable="true" data-atk="7" data-def="6">
+      <img src="https://placebear.com/100/100" alt="Character">
+      <div class="card-title">Papyrus</div>
+      <div class="card-desc">Energetic skeleton who loves spaghetti.</div>
+      <div class="card-stats">
+        <div class="stat">ATK: 7</div>
+        <div class="stat">DEF: 6</div>
+      </div>
+    </div>
+
+    <div class="card common" draggable="true" data-atk="4" data-def="2">
+      <img src="https://placebeard.it/100x100" alt="Character">
+      <div class="card-title">Flowey</div>
+      <div class="card-desc">A flower with a sinister smile.</div>
+      <div class="card-stats">
+        <div class="stat">ATK: 4</div>
+        <div class="stat">DEF: 2</div>
+      </div>
+    </div>
+  </div>
 
   <div class="battlefield">
     <div class="zone" id="player-zone">Player Zone</div>
@@ -123,57 +147,9 @@
     const playerZone = document.getElementById('player-zone');
     const aiZone = document.getElementById('ai-zone');
     const result = document.getElementById('result');
-    const playerHand = document.getElementById('player-hand');
 
-    // Characters
-    const characters = [
-      { name: "FRISK", hp: 20, stamina: 0, restrictions: ["MAGIC"] },
-      { name: "SANS", hp: 1, stamina: 5, restrictions: ["ITEM"] }
-    ];
-
-    // Cards
-    const cardPool = {
-      FRISK: [
-        { type: "ITEM", name: "Stick", desc: "Deals 1 damage", effect: (target) => target.hp -= 1 }
-      ],
-      SANS: [
-        { type: "MAGIC", name: "Bone", desc: "Deals 1 damage", effect: (target) => target.hp -= 1 }
-      ]
-    };
-
-    // Assign random characters
-    const playerChar = characters[Math.floor(Math.random() * characters.length)];
-    const aiChar = characters[Math.floor(Math.random() * characters.length)];
-
-    // Display info
-    function renderInfo() {
-      document.getElementById('player-info').innerHTML = `
-        <h2>Player: ${playerChar.name}</h2>
-        <div class="hp-bar"><div class="hp-fill" style="width:${(playerChar.hp/20)*100}%"></div></div>
-        ${playerChar.name === "SANS" ? `<div class="stamina-bar"><div class="stamina-fill" style="width:${(playerChar.stamina/5)*100}%"></div></div>` : ""}
-      `;
-      document.getElementById('ai-info').innerHTML = `
-        <h2>AI: ${aiChar.name}</h2>
-        <div class="hp-bar"><div class="hp-fill" style="width:${(aiChar.hp/20)*100}%"></div></div>
-        ${aiChar.name === "SANS" ? `<div class="stamina-bar"><div class="stamina-fill" style="width:${(aiChar.stamina/5)*100}%"></div></div>` : ""}
-      `;
-    }
-
-    renderInfo();
-
-    // Generate player hand based on character
-    cardPool[playerChar.name].forEach(c => {
-      const card = document.createElement('div');
-      card.className = "card common";
-      card.draggable = true;
-      card.dataset.type = c.type;
-      card.dataset.name = c.name;
-      card.innerHTML = `
-        <div class="card-title">${c.name}</div>
-        <div class="card-desc">${c.desc}</div>
-      `;
-      playerHand.appendChild(card);
-
+    // Drag & Drop
+    document.querySelectorAll('.card').forEach(card => {
       card.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', e.target.outerHTML);
         e.target.style.opacity = '0.5';
@@ -190,50 +166,40 @@
       playerZone.innerHTML = data;
     });
 
-    // AI plays
+    // AI plays randomly
     document.getElementById('ai-play').addEventListener('click', () => {
-      const aiCards = cardPool[aiChar.name];
+      const aiCards = [
+        { name: "Undyne", atk: 6, def: 5 },
+        { name: "Toriel", atk: 5, def: 7 },
+        { name: "Mettaton", atk: 8, def: 4 }
+      ];
       const choice = aiCards[Math.floor(Math.random() * aiCards.length)];
       aiZone.innerHTML = `
         <div class="card epic">
           <div class="card-title">${choice.name}</div>
-          <div class="card-desc">${choice.desc}</div>
+          <div class="card-stats">
+            <div class="stat">ATK: ${choice.atk}</div>
+            <div class="stat">DEF: ${choice.def}</div>
+          </div>
         </div>
       `;
 
-      // Resolve battle
+      // Compare stats
       const playerCard = playerZone.querySelector('.card');
       if (!playerCard) {
         result.textContent = "You must place a card first!";
         return;
       }
+      const playerAtk = parseInt(playerCard.dataset.atk);
+      const playerDef = parseInt(playerCard.dataset.def);
 
-      // Player attacks AI
-      const playerCardName = playerCard.dataset.name;
-      const playerCardObj = cardPool[playerChar.name].find(c => c.name === playerCardName);
-      if (playerCardObj) {
-        if (aiChar.name === "SANS" && aiChar.stamina > 0) {
-          aiChar.stamina -= 1; // Sans dodges
-          result.textContent = "Sans dodged!";
-        } else {
-          playerCardObj.effect(aiChar);
-        }
+      if (playerAtk > choice.def) {
+        result.textContent = "Player wins!";
+      } else if (choice.atk > playerDef) {
+        result.textContent = "AI wins!";
+      } else {
+        result.textContent = "It's a draw!";
       }
-
-      // AI attacks Player
-      if (choice) {
-        if (playerChar.name === "SANS" && playerChar.stamina > 0) {
-          playerChar.stamina -= 1;
-          result.textContent += " Player Sans dodged!";
-        } else {
-          choice.effect(playerChar);
-        }
-      }
-
-      renderInfo();
-
-      if (playerChar.hp <= 0) result.textContent = "AI wins!";
-      else if (aiChar.hp <= 0) result.textContent = "Player wins!";
     });
   </script>
 </body>
