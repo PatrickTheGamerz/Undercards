@@ -19,7 +19,7 @@
     --ut-yellow: #ffff00;
     --ut-green: #00ff00;
     --ut-blue: #00a2e8;
-    --ut-soul-blue: #0033cc;
+    --ut-purple: #a855f7;
     --ut-gray: #aaaaaa;
   }
   
@@ -32,173 +32,210 @@
     user-select: none;
     -webkit-touch-callout: none;
     overflow-x: hidden;
+    image-rendering: pixelated;
   }
 
-  /* CRT Overlay Effect */
+  /* Crisp CRT Scanline Overlay */
   body::after {
     content: " ";
     display: block;
     position: fixed;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
     z-index: 999;
-    background-size: 100% 4px, 3px 100%;
+    background-size: 100% 4px;
     pointer-events: none;
   }
 
   .ut-panel {
     border: 4px solid var(--ut-white);
     background: var(--ut-black);
-    padding: clamp(8px, 2vw, 16px);
+    padding: clamp(12px, 2.5vw, 20px);
+    box-shadow: inset 0 0 0 2px #000, 0 0 0 2px #000, 4px 4px 0px rgba(255,255,255,0.1);
   }
 
   .ut-menu-btn {
     background: transparent;
     color: var(--ut-white);
     border: none;
-    padding: 4px 12px 4px 36px;
+    padding: 6px 12px 6px 40px;
     cursor: pointer;
     text-align: left;
     font-family: inherit;
-    font-size: clamp(22px, 5vw, 32px);
+    font-size: clamp(24px, 5vw, 36px);
     display: flex;
     align-items: center;
     position: relative;
-    transition: color 0.1s;
+    transition: color 0.1s, transform 0.1s;
+    text-shadow: 2px 2px 0px #000;
   }
   .ut-menu-btn::before {
     content: "♥";
     color: transparent;
     position: absolute;
     left: 8px;
-    font-size: clamp(18px, 4vw, 24px);
+    font-size: clamp(20px, 4.5vw, 28px);
     transition: color 0.1s;
   }
+  .ut-menu-btn:hover:not(:disabled) { transform: translateX(5px); }
   .ut-menu-btn:hover:not(:disabled)::before { color: var(--ut-red); }
-  .ut-menu-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ut-menu-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .ut-action-btn {
-    border: 2px solid var(--ut-white);
+    border: 3px solid var(--ut-white);
     background: var(--ut-black);
     color: var(--ut-white);
-    padding: 8px 16px;
+    padding: 8px 20px;
     font-family: inherit;
-    font-size: clamp(18px, 4vw, 24px);
+    font-size: clamp(20px, 4vw, 28px);
     cursor: pointer;
     transition: all 0.1s;
+    box-shadow: inset 0 0 0 2px #000;
   }
-  .ut-action-btn:hover:not(:disabled) { background: var(--ut-white); color: var(--ut-black); }
-  .ut-action-btn:disabled { border-color: #555; color: #555; cursor: not-allowed; }
+  .ut-action-btn:hover:not(:disabled) { background: var(--ut-white); color: var(--ut-black); box-shadow: inset 0 0 0 2px var(--ut-white); }
+  .ut-action-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; }
 
-  /* Responsive Cards */
+  /* Polished Responsive Cards */
   .card-container { perspective: 1000px; }
   .ut-card {
-    width: clamp(100px, 25vw, 150px);
-    height: clamp(140px, 35vw, 210px);
+    width: clamp(110px, 28vw, 160px);
+    height: clamp(150px, 38vw, 220px);
     border: 4px solid var(--ut-white);
-    background: #000;
-    display: flex; flex-direction: column; padding: 6px;
-    cursor: pointer; transition: transform 0.1s, border-color 0.1s;
+    background: #050505;
+    display: flex; flex-direction: column; padding: 8px;
+    cursor: pointer; transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.15s, box-shadow 0.15s;
     position: relative; overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
   }
-  .ut-card:hover { transform: translateY(-8px); border-color: var(--ut-yellow); }
-  .ut-card.active-deck { border-color: var(--ut-green); }
-  .ut-card.disabled { opacity: 0.4; pointer-events: none; }
+  .ut-card:hover { 
+      transform: translateY(-12px) scale(1.02); 
+      border-color: var(--ut-yellow); 
+      box-shadow: 0 12px 20px rgba(255,255,255,0.15), inset 0 0 10px rgba(255,255,0,0.2);
+  }
+  .ut-card:active { transform: translateY(-4px) scale(0.98); }
+  .ut-card.active-deck { border-color: var(--ut-green); box-shadow: 0 0 15px rgba(0,255,0,0.3); }
+  .ut-card.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
   
   .card-cat-items { border-top-color: var(--ut-green); border-bottom-color: var(--ut-green); }
   .card-cat-options { border-top-color: var(--ut-yellow); border-bottom-color: var(--ut-yellow); }
   .card-cat-magic { border-top-color: var(--ut-blue); border-bottom-color: var(--ut-blue); }
   
-  .card-title { font-size: clamp(14px, 3.5vw, 22px); font-weight: bold; text-align: center; margin-bottom: 2px; line-height: 1; margin-top: 24px; }
-  .card-desc { font-size: clamp(12px, 3vw, 18px); color: var(--ut-gray); text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center; line-height: 1.1;}
-  .card-cost { position: absolute; bottom: 4px; right: 6px; font-size: clamp(14px, 3vw, 20px); color: var(--ut-blue); }
-  .card-tag { position: absolute; top: 4px; left: 4px; font-size: clamp(10px, 2.5vw, 16px); background: var(--ut-white); color: var(--ut-black); padding: 0 4px; }
+  .card-title { font-size: clamp(16px, 4vw, 24px); font-weight: bold; text-align: center; margin-bottom: 2px; line-height: 1; margin-top: 24px; text-shadow: 1px 1px 0 #000; }
+  .card-desc { font-size: clamp(13px, 3.2vw, 18px); color: var(--ut-gray); text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center; line-height: 1.1;}
+  .card-cost { position: absolute; bottom: 4px; right: 6px; font-size: clamp(14px, 3.5vw, 20px); color: var(--ut-blue); text-shadow: 1px 1px 0 #000;}
+  .card-tag { position: absolute; top: 4px; left: 4px; font-size: clamp(12px, 3vw, 16px); background: var(--ut-white); color: var(--ut-black); padding: 0 6px; font-weight: bold;}
 
-  /* Bars */
-  .bar-bg { width: 100%; height: clamp(16px, 4vw, 28px); background: #440000; border: none; }
-  .bar-fill-hp { height: 100%; background: var(--ut-yellow); transition: width 0.3s; }
-  .bar-fill-st { height: 100%; background: var(--ut-green); transition: width 0.3s; }
+  /* Authentic Bars */
+  .bar-bg { width: 100%; height: clamp(20px, 4.5vw, 30px); background: #440000; position: relative; border: 2px solid #000; }
+  .bar-fill-hp { height: 100%; background: var(--ut-yellow); transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+  .bar-fill-st { height: 100%; background: var(--ut-green); transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 
+  /* Animations & Effects */
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-  .blinking { animation: blink 0.5s infinite; }
+  .blinking { animation: blink 0.5s infinite step-end; }
   
-  @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
-  .shake-anim { animation: shake 0.4s; }
+  @keyframes shake { 0% { transform: translate(2px, 2px); } 20% { transform: translate(-2px, -2px); } 40% { transform: translate(-3px, 1px); } 60% { transform: translate(3px, -1px); } 80% { transform: translate(1px, -3px); } 100% { transform: translate(0, 0); } }
+  .shake-anim { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+
+  @keyframes flashRed { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 10px red) sepia(1) hue-rotate(-50deg) saturate(5); } }
+  .flash-red-anim { animation: flashRed 0.4s; }
+
+  @keyframes floatUpFade { 
+      0% { opacity: 1; transform: translateY(0) scale(1.5); } 
+      100% { opacity: 0; transform: translateY(-60px) scale(2); } 
+  }
+  .damage-text { position: absolute; font-weight: bold; text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; animation: floatUpFade 1s ease-out forwards; z-index: 100; pointer-events: none; }
+
+  @keyframes fireBeam {
+    0% { width: 0; opacity: 0; transform: scaleY(0.1); }
+    15% { width: 100%; opacity: 1; background: white; transform: scaleY(1.5); }
+    40% { background: var(--ut-blue); transform: scaleY(1); }
+    100% { opacity: 0; width: 100%; transform: scaleY(0.5); }
+  }
 
   /* Minigames */
   .minigame-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 50;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 50;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
   
   #battlebox {
     width: clamp(280px, 90vw, 550px);
-    height: clamp(180px, 40vh, 300px);
+    height: clamp(180px, 40vh, 320px);
     border: 4px solid white;
     position: relative;
     overflow: hidden;
     background: black;
     margin-bottom: 10px;
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
   }
   
   .soul {
-    position: absolute; width: 16px; height: 16px;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 28s-12-9-12-16c0-4 4-7 8-7 2 0 4 2 4 2s2-2 4-2c4 0 8 3 8 7 0 7-12 16-12 16z" fill="red"/></svg>') no-repeat center;
+    position: absolute; width: 18px; height: 18px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 28s-12-9-12-16c0-4 4-7 8-7 2 0 4 2 4 2s2-2 4-2c4 0 8 3 8 7 0 7-12 16-12 16z" fill="%23ff0000" stroke="white" stroke-width="1"/></svg>') no-repeat center;
     background-size: contain; z-index: 10;
+    filter: drop-shadow(0 0 4px red);
   }
   .soul.blue {
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 28s-12-9-12-16c0-4 4-7 8-7 2 0 4 2 4 2s2-2 4-2c4 0 8 3 8 7 0 7-12 16-12 16z" fill="%230033cc"/></svg>') no-repeat center;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 28s-12-9-12-16c0-4 4-7 8-7 2 0 4 2 4 2s2-2 4-2c4 0 8 3 8 7 0 7-12 16-12 16z" fill="%230033cc" stroke="white" stroke-width="1"/></svg>') no-repeat center;
+    filter: drop-shadow(0 0 4px #0033cc);
   }
-  
-  /* Authentic Fight Bar */
+
+  /* Sharpened Fight Bar */
   .fight-container {
-    width: clamp(280px, 90vw, 600px);
-    height: clamp(100px, 20vw, 140px);
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 140" preserveAspectRatio="none"><rect width="600" height="140" fill="black" stroke="white" stroke-width="8"/><path d="M 50 70 Q 300 10 550 70 Q 300 130 50 70 Z" fill="none" stroke="white" stroke-width="3"/><rect x="285" y="20" width="30" height="100" fill="none" stroke="%230f0" stroke-width="3"/></svg>') no-repeat center;
+    width: clamp(280px, 90vw, 650px);
+    height: clamp(100px, 20vw, 150px);
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 140" preserveAspectRatio="none"><rect width="600" height="140" fill="black" stroke="white" stroke-width="8"/><path d="M 50 70 Q 300 10 550 70 Q 300 130 50 70 Z" fill="none" stroke="white" stroke-width="3"/><rect x="280" y="10" width="40" height="120" fill="none" stroke="%2300ff00" stroke-width="4"/></svg>') no-repeat center;
     background-size: 100% 100%;
     position: relative;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
   .fight-cursor {
-    width: 6px; height: 90%; background: white; position: absolute; left: 0;
-    box-shadow: 0 0 8px rgba(255,255,255,0.9);
+    width: 8px; height: 95%; background: white; position: absolute; left: 0;
+    box-shadow: 0 0 10px rgba(255,255,255,1), 0 0 20px rgba(255,255,255,0.8);
+    border-radius: 4px;
   }
 
-  /* Shop Layout */
-  .shop-scene { display: flex; flex-direction: column; width: 100%; max-width: 800px; height: 100vh; margin: 0 auto; }
-  .shop-bg { flex: 1; min-height: 200px; background: #1a1a1a; display: flex; justify-content: center; align-items: flex-end; position: relative; border: 4px solid white; border-bottom: none; overflow: hidden; }
-  .shop-counter { position: absolute; bottom: 0; width: 100%; height: 30px; background: #111; border-top: 4px solid white; }
-  .shop-dialogue-box { min-height: 160px; display: flex; flex-direction: column; border: 4px solid white; background: black; }
-  @media(min-width: 640px) { .shop-dialogue-box { flex-direction: row; height: 200px; } }
+  /* Shop Layout Refinement */
+  .shop-scene { display: flex; flex-direction: column; width: 100%; max-width: 850px; height: 100vh; margin: 0 auto; background: #000; }
+  .shop-bg { flex: 1; min-height: 220px; background: #0a0a0a; display: flex; justify-content: center; align-items: flex-end; position: relative; border: 4px solid white; border-bottom: none; overflow: hidden; box-shadow: inset 0 20px 50px rgba(0,0,0,0.8); }
+  .shop-counter { position: absolute; bottom: 0; width: 100%; height: 25px; background: #111; border-top: 4px solid white; box-shadow: 0 -4px 10px rgba(0,0,0,0.5); }
+  .shop-dialogue-box { min-height: 180px; display: flex; flex-direction: column; border: 4px solid white; background: black; }
+  @media(min-width: 640px) { .shop-dialogue-box { flex-direction: row; height: 220px; } }
   
-  .shop-text-area { flex: 2; border-bottom: 4px solid white; padding: 16px; font-size: clamp(20px, 4vw, 32px); line-height: 1.2; position: relative; }
+  .shop-text-area { flex: 2; border-bottom: 4px solid white; padding: 20px; font-size: clamp(24px, 4vw, 36px); line-height: 1.3; position: relative; }
   @media(min-width: 640px) { .shop-text-area { border-bottom: none; border-right: 4px solid white; } }
   .shop-text-area::before { content: "* "; }
-  .shop-options-area { flex: 1; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 10px; gap: 4px; }
-  @media(min-width: 640px) { .shop-options-area { flex-direction: column; flex-wrap: nowrap; } }
+  .shop-options-area { flex: 1; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-content: center; padding: 12px; gap: 8px; }
+  @media(min-width: 640px) { .shop-options-area { flex-direction: column; flex-wrap: nowrap; align-items: flex-start; padding-left: 20px; } }
 
-  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar { width: 10px; }
   ::-webkit-scrollbar-track { background: var(--ut-black); border-left: 2px solid #333; }
-  ::-webkit-scrollbar-thumb { background: var(--ut-white); }
+  ::-webkit-scrollbar-thumb { background: var(--ut-white); border: 1px solid #000; }
 
-  .mobile-controls-container {
-    display: none; justify-content: center; gap: 10px; width: 100%; padding: 10px;
-  }
-  .d-pad {
-    display: grid; grid-template-columns: 50px 50px 50px; grid-template-rows: 50px 50px; gap: 5px;
-  }
-  .d-btn { background: rgba(255,255,255,0.1); border: 2px solid white; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 50%; user-select: none; }
-  .d-btn:active { background: rgba(255,255,255,0.4); }
+  /* Mobile Controls */
+  .mobile-controls-container { display: none; justify-content: center; gap: 20px; width: 100%; padding: 15px; margin-top: 10px; }
+  .d-pad { display: grid; grid-template-columns: 60px 60px 60px; grid-template-rows: 60px 60px; gap: 5px; }
+  .d-btn { background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.5); color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; border-radius: 50%; user-select: none; transition: background 0.1s; }
+  .d-btn:active { background: rgba(255,255,255,0.6); }
   .d-up { grid-column: 2; grid-row: 1; }
   .d-left { grid-column: 1; grid-row: 2; }
   .d-down { grid-column: 2; grid-row: 2; }
   .d-right { grid-column: 3; grid-row: 2; }
   
   .action-pad { display: flex; align-items: center; justify-content: center; }
-  .d-action { width: 70px; height: 70px; border-radius: 50%; background: var(--ut-blue); border: 2px solid white; font-weight: bold; }
+  .d-action { width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 162, 232, 0.4); border: 3px solid var(--ut-blue); font-weight: bold; font-size: 20px; text-shadow: 1px 1px 0 #000; }
+  .d-action:active { background: rgba(0, 162, 232, 0.8); }
   
   @media (pointer: coarse) { .mobile-controls-container { display: flex; } }
+
+  /* Sans SVG refinements */
+  .sans-pupil { transform-origin: 41px 40px; animation: sansLook 4s infinite alternate ease-in-out; }
+  @keyframes sansLook { 0%, 40% { transform: translateX(0); } 45%, 55% { transform: translateX(-2px); } 60%, 100% { transform: translateX(2px); } }
+
+  /* HUD layout */
+  .hud-container { background: linear-gradient(180deg, #111 0%, #000 100%); border-bottom: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
 </style>
 </head>
 <body>
@@ -223,10 +260,12 @@
     'f_pie': { id: 'f_pie', name: 'B.Scotch Pie', cat: 'ITEMS', desc: 'Full Heal.', cost: 0, role: 'Frisk', healFull: true, rarity: 'rare' },
     'f_noodles': { id: 'f_noodles', name: 'Insta-Noodles', cat: 'ITEMS', desc: 'Heal 40 HP.', cost: 0, role: 'Frisk', heal: 40 },
     'f_hero': { id: 'f_hero', name: 'Leg. Hero', cat: 'ITEMS', desc: '+30 HP, +1 ATK.', cost: 0, role: 'Frisk', heal: 30, atkBuff: 1, rarity: 'rare' },
+    'f_cider': { id: 'f_cider', name: 'Spider Cider', cat: 'ITEMS', desc: 'Heal 24 HP.', cost: 0, role: 'Frisk', heal: 24 },
     // Sans Items
     's_dog': { id: 's_dog', name: 'Hot Dog...?', cat: 'ITEMS', desc: 'Heal 20 HP, +15 ST.', cost: 0, role: 'Sans', heal: 20, st: 15 },
     's_cat': { id: 's_cat', name: 'Hot Cat', cat: 'ITEMS', desc: 'Heal 10 HP, +30 ST.', cost: 0, role: 'Sans', heal: 10, st: 30 },
     's_ketchup': { id: 's_ketchup', name: 'Ketchup', cat: 'ITEMS', desc: 'Full ST.', cost: 0, role: 'Sans', stFull: true, rarity: 'rare' },
+    's_fries': { id: 's_fries', name: 'Greasy Fries', cat: 'ITEMS', desc: 'Heal 15 HP, +10 ST.', cost: 0, role: 'Sans', heal: 15, st: 10 },
     // Sans Magic
     's_bone1': { id: 's_bone1', name: 'Bone Throw', cat: 'MAGIC', desc: 'Basic sliding bones.', cost: 15, role: 'Sans', pattern: 'bones_easy' },
     's_bone2': { id: 's_bone2', name: 'Bone Jumps', cat: 'MAGIC', desc: 'Blue soul gravity test.', cost: 20, role: 'Sans', pattern: 'blue_bones' },
@@ -249,7 +288,6 @@
   // --- REACT APP ---
   window.initReactApp = (firebaseConfigStr, appIdStr, initialTokenStr) => {
     
-    // Safety check for Github Pages / Static execution without Firebase variables
     let isOfflineMode = false;
     let firebaseConfig = {};
     let app, auth, db;
@@ -286,15 +324,25 @@
       return displayed;
     };
 
+    // Damage Text Component
+    const FloatingText = ({ text, color, x, y, onComplete }) => {
+       useEffect(() => { const t = setTimeout(onComplete, 1000); return ()=>clearTimeout(t); }, []);
+       return React.createElement("div", {
+           className: `damage-text text-${color}-500`,
+           style: { left: x, top: y }
+       }, text);
+    };
+
     // --- MINIGAMES ---
     const FightMinigame = ({ onComplete }) => {
       const cursorRef = useRef(null);
       const reqRef = useRef(null);
       const [done, setDone] = useState(false);
+      const [resultText, setResultText] = useState("");
 
       useLayoutEffect(() => {
         if(done) return;
-        let x = 0; let d = 1; const speed = 1.6;
+        let x = 0; let d = 1; const speed = 1.8;
         const loop = () => {
           x += d * speed;
           if (x >= 100) { x = 100; d = -1; }
@@ -310,19 +358,20 @@
         if(done) return;
         setDone(true); cancelAnimationFrame(reqRef.current);
         const finalX = parseFloat(cursorRef.current.style.left);
-        const dist = Math.abs(50 - finalX); // center is 50
+        const dist = Math.abs(50 - finalX); 
         let multiplier = 0;
-        if(dist < 4) multiplier = 2.0; // Perfect Crit
-        else if(dist < 20) multiplier = 1.0; // Hit
-        else if(dist < 40) multiplier = 0.5; // Weak
         
-        // Add screen shake class to body if it's a hit
+        if(dist < 5) { multiplier = 2.0; setResultText("CRITICAL!"); }
+        else if(dist < 22) { multiplier = 1.0; setResultText("GOOD"); }
+        else if(dist < 40) { multiplier = 0.5; setResultText("WEAK"); }
+        else { setResultText("MISS"); }
+        
         if (multiplier > 0) {
             document.body.classList.add('shake-anim');
             setTimeout(() => document.body.classList.remove('shake-anim'), 400);
         }
         
-        setTimeout(() => onComplete(multiplier), 800);
+        setTimeout(() => onComplete(multiplier), 1000);
       };
 
       useEffect(() => {
@@ -332,7 +381,9 @@
       }, [done]);
 
       return React.createElement("div", { className: "minigame-overlay px-4" },
-        React.createElement("div", { className: "text-2xl md:text-3xl mb-8 text-center blinking" }, done ? "* ATTACK LOCKED." : "* PRESS [Z] OR TAP"),
+        React.createElement("div", { className: "text-3xl md:text-5xl mb-10 text-center font-bold", style:{textShadow:'2px 2px 0 #000'} }, 
+            done ? React.createElement("span", {className: resultText==="MISS" ? "text-gray-500" : "text-yellow-400 blinking"}, `* ${resultText}`) : React.createElement("span", {className:"blinking"}, "* PRESS [Z] OR TAP")
+        ),
         React.createElement("div", { className: "fight-container cursor-pointer", onClick: handleStop },
           React.createElement("div", { className: "fight-cursor", ref: cursorRef })
         )
@@ -369,22 +420,23 @@
         window.utTouch = (dir, val) => touch[dir] = val;
 
         const box = boxRef.current;
-        const rect = box.getBoundingClientRect(); // more accurate than clientWidth sometimes
+        const rect = box.getBoundingClientRect(); 
         let sx = rect.width/2; let sy = rect.height/2;
-        const speed = 250; 
+        const speed = 280; 
         let lastTime = performance.now();
         const duration = pattern === 'blasters' ? 6000 : 5000;
         let elapsed = 0;
 
         const isBlue = pattern === 'blue_bones';
-        let vy = 0; const gravity = 1200; const jumpPower = -500;
+        let vy = 0; const gravity = 1500; const jumpPower = -600;
         let isGrounded = false;
-        if(isBlue) sy = rect.height - 16;
+        if(isBlue) sy = rect.height - 18;
 
         const projs = [];
         const createBone = (x, y, vx, vy, w, h) => {
           const el = document.createElement('div');
-          el.style.position = 'absolute'; el.style.background = 'white'; el.style.borderRadius = '4px';
+          el.style.position = 'absolute'; el.style.background = 'white'; el.style.borderRadius = '8px';
+          el.style.border = '2px solid black'; // Clearer visual definition
           el.style.width = w+'px'; el.style.height = h+'px';
           el.style.left = x+'px'; el.style.top = y+'px';
           box.appendChild(el);
@@ -394,17 +446,17 @@
           const el = document.createElement('div');
           el.style.position = 'absolute'; el.style.width = w+'px'; el.style.height = h+'px';
           el.style.left = x+'px'; el.style.top = y+'px';
-          el.innerHTML = `<svg viewBox="0 0 100 100" style="width:50px; height:50px; margin-left:${w/2-25}px"><path d="M20 20 L80 20 L80 60 L60 80 L40 80 L20 60 Z" fill="white"/><circle cx="35" cy="40" r="8" fill="black"/><circle cx="65" cy="40" r="8" fill="black"/></svg>`;
+          el.innerHTML = `<svg viewBox="0 0 100 100" style="width:50px; height:50px; margin-left:${w/2-25}px"><path d="M20 20 L80 20 L80 60 L60 80 L40 80 L20 60 Z" fill="white" stroke="black" stroke-width="2"/><circle cx="35" cy="40" r="8" fill="black"/><circle cx="65" cy="40" r="8" fill="black"/></svg>`;
           box.appendChild(el);
           projs.push({ el, x, y, vx:0, vy:0, w, h, type: 'blaster', delay, state: 0, time: 0 });
         };
 
         if (pattern === 'bones_easy') {
-          for(let i=0; i<8; i++) createBone(rect.width + i*90, rect.height - 20 - Math.random()*50, -150 - Math.random()*50, 0, 16, 80);
+          for(let i=0; i<8; i++) createBone(rect.width + i*100, rect.height - 20 - Math.random()*80, -180 - Math.random()*50, 0, 16, 120);
         } else if (isBlue) {
           for(let i=0; i<12; i++) {
-              const h = 20 + Math.random()*50;
-              createBone(rect.width + i*110, rect.height - h, -220, 0, 16, h);
+              const h = 30 + Math.random()*70;
+              createBone(rect.width + i*130, rect.height - h, -250, 0, 18, h);
           }
         } else if (pattern === 'blasters') {
           for(let i=0; i<4; i++) createBlaster(0, Math.random()*(rect.height-50), rect.width, 60, i*1.2);
@@ -422,7 +474,7 @@
         };
 
         const loop = (time) => {
-          const bRect = box.getBoundingClientRect(); // update limits dynamically if resize happens
+          const bRect = box.getBoundingClientRect(); 
           const dt = Math.min(0.05, (time - lastTime) / 1000);
           lastTime = time; elapsed += dt * 1000;
 
@@ -431,15 +483,15 @@
 
           if (isBlue) {
               if (targetIsAI) {
-                  const incoming = projs.find(p => p.type === 'bone' && p.x > sx && p.x - sx < 100);
+                  const incoming = projs.find(p => p.type === 'bone' && p.x > sx && p.x - sx < 120);
                   if (incoming && isGrounded) { vy = jumpPower; isGrounded = false; }
               } else {
                   const wantJump = keys.w || keys.z || touch.u || touch.z;
                   if (wantJump && isGrounded) { vy = jumpPower; isGrounded = false; }
-                  else if (!wantJump && vy < 0) { vy *= 0.5; }
+                  else if (!wantJump && vy < 0) { vy *= 0.6; } // Variable jump
               }
               sy += vy * dt; vy += gravity * dt;
-              const floor = bRect.height - 16;
+              const floor = bRect.height - 18;
               if (sy >= floor) { sy = floor; vy = 0; isGrounded = true; }
           } else {
               const dy = (keys.s || touch.d) - (keys.w || touch.u);
@@ -448,32 +500,33 @@
               if(targetIsAI) {
                   const incoming = projs[0];
                   if(incoming) {
-                      const targetY = (incoming.y > sy) ? 0 : bRect.height - 16;
-                      sy += (targetY - sy) * 2 * dt; 
+                      const targetY = (incoming.y > sy) ? 0 : bRect.height - 18;
+                      sy += (targetY - sy) * 3 * dt; 
                   }
               }
           }
 
-          sx = Math.max(0, Math.min(bRect.width - 16, sx));
-          sy = Math.max(0, Math.min(bRect.height - 16, sy));
+          sx = Math.max(0, Math.min(bRect.width - 18, sx));
+          sy = Math.max(0, Math.min(bRect.height - 18, sy));
           if(soulRef.current) { soulRef.current.style.left = sx + 'px'; soulRef.current.style.top = sy + 'px'; }
 
           projs.forEach(p => {
             if (p.type === 'bone') {
               p.x += p.vx * dt; p.y += p.vy * dt;
               p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px';
-              if(rectOverlap(sx, sy, 12, 12, p.x+2, p.y+2, p.w-4, p.h-4)) takeHit();
+              // Tighter collision hitbox
+              if(rectOverlap(sx+2, sy+2, 14, 14, p.x+4, p.y+4, p.w-8, p.h-8)) takeHit();
             } else if (p.type === 'blaster') {
               p.time += dt;
               if (p.state === 0 && p.time > p.delay) { p.state = 1; p.el.style.opacity = 1; }
               else if (p.state === 1 && p.time > p.delay + 0.8) {
                 p.state = 2;
                 const beam = document.createElement('div');
-                beam.style.position = 'absolute'; beam.style.top = '25px'; beam.style.height = '20px'; beam.style.width = '100%';
+                beam.style.position = 'absolute'; beam.style.top = '25px'; beam.style.height = '24px'; beam.style.width = '100%';
                 beam.style.animation = 'fireBeam 0.5s ease-out';
                 p.el.appendChild(beam);
               } else if (p.state === 2) {
-                if (p.time < p.delay + 1.2 && rectOverlap(sx, sy, 16, 16, p.x, p.y+25, p.w, 20)) takeHit();
+                if (p.time < p.delay + 1.2 && rectOverlap(sx+2, sy+2, 14, 14, p.x, p.y+25, p.w, 24)) takeHit();
               }
             }
           });
@@ -497,11 +550,10 @@
       }, label);
 
       return React.createElement("div", { className: "minigame-overlay" },
-        React.createElement("div", { className: "text-red-500 text-2xl md:text-3xl mb-4 font-bold" }, `HITS TAKEN: ${hits}`),
+        React.createElement("div", { className: "text-red-500 text-3xl md:text-5xl mb-6 font-bold", style:{textShadow:'2px 2px 0px #000'} }, `HITS: ${hits}`),
         React.createElement("div", { id: "battlebox", ref: boxRef },
           React.createElement("div", { className: `soul ${pattern==='blue_bones'?'blue':''}`, ref: soulRef })
         ),
-        // External mobile controls to prevent thumbs blocking view
         !targetIsAI && React.createElement("div", { className: "mobile-controls-container" },
            React.createElement("div", { className: "d-pad" }, 
               React.createElement(TouchBtn, { d: 'u', label: '↑', className: 'd-up' }),
@@ -510,7 +562,7 @@
               React.createElement(TouchBtn, { d: 'r', label: '→', className: 'd-right' })
            ),
            pattern === 'blue_bones' && React.createElement("div", { className: "action-pad" },
-              React.createElement(TouchBtn, { d: 'z', label: 'JUMP', className: 'd-action' })
+              React.createElement(TouchBtn, { d: 'z', label: 'JMP', className: 'd-action' })
            )
         )
       );
@@ -526,8 +578,8 @@
         React.createElement("div", { className: "card-title" }, c.name),
         React.createElement("div", { className: "card-desc" }, c.desc),
         c.cost > 0 && React.createElement("div", { className: "card-cost" }, `ST ${c.cost}`),
-        c.rarity === 'rare' && React.createElement("div", { className: "absolute top-1 right-1 text-yellow-400 text-xs md:text-sm" }, "★"),
-        isActiveInDeck && React.createElement("div", { className: "absolute top-1 right-1 text-green-400 text-xs md:text-sm font-bold" }, "✔")
+        c.rarity === 'rare' && React.createElement("div", { className: "absolute top-2 right-2 text-yellow-400 text-sm md:text-lg" }, "★"),
+        isActiveInDeck && React.createElement("div", { className: "absolute top-2 right-2 text-green-400 text-sm md:text-lg font-bold bg-black rounded-full px-1" }, "✔")
       );
     };
 
@@ -536,18 +588,17 @@
       const [user, setUser] = useState(null);
       const [profile, setProfile] = useState(null);
       const [view, setView] = useState('menu'); 
-      const [subView, setSubView] = useState(''); 
-
+      
       const [shopView, setShopView] = useState('main');
       const [shopRawDialogue, setShopRawDialogue] = useState("yeah.\nwhat d'ya wanna buy?");
-      const shopDialogue = useTypewriter(shopRawDialogue, 35);
+      const shopDialogue = useTypewriter(shopRawDialogue, 30);
       
       const [match, setMatch] = useState(null); 
       const [actSubMenu, setActSubMenu] = useState(false);
+      const [floatingTexts, setFloatingTexts] = useState([]);
 
       useEffect(() => {
         if (isOfflineMode) {
-            // Local Mock Auth
             setUser({ uid: 'local-player' });
         } else {
             const initAuth = async () => {
@@ -569,24 +620,21 @@
       useEffect(() => {
         if (!user) return;
         
-        const defaultProfile = { exp: 0, coins: 150, inventory: [], deckFrisk: [...DEFAULT_DECK.Frisk], deckSans: [...DEFAULT_DECK.Sans] };
+        const defaultProfile = { exp: 0, coins: 150, inventory: [], deckFrisk: [...DEFAULT_DECK.Frisk], deckSans: [...DEFAULT_DECK.Sans], activeRole: 'Frisk' };
 
         if (isOfflineMode) {
-            // Load from LocalStorage if available, otherwise default
             const stored = localStorage.getItem('undercards_profile');
             if (stored) {
-                try { setProfile(JSON.parse(stored)); } 
+                try { setProfile({...defaultProfile, ...JSON.parse(stored)}); } 
                 catch(e) { setProfile(defaultProfile); }
-            } else {
-                setProfile(defaultProfile);
-            }
+            } else { setProfile(defaultProfile); }
         } else {
             const ref = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
             const unsub = onSnapshot(ref, snap => {
               if (!snap.exists()) {
                 setDoc(ref, defaultProfile);
                 setProfile(defaultProfile);
-              } else { setProfile(snap.data()); }
+              } else { setProfile({...defaultProfile, ...snap.data()}); }
             }, err => {
                 console.error("Firestore error, switching to offline");
                 isOfflineMode = true;
@@ -599,17 +647,21 @@
       const updateProfile = async (updates) => {
         if(!user || !profile) return;
         const newProf = { ...profile, ...updates };
-        setProfile(newProf); // Optimistic UI update
+        setProfile(newProf);
 
         if (isOfflineMode) {
             localStorage.setItem('undercards_profile', JSON.stringify(newProf));
         } else {
-            try {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), updates);
-            } catch(e) {
-                console.error("Failed to save cloud profile");
-            }
+            try { await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), updates); } 
+            catch(e) { console.error("Failed to save cloud profile"); }
         }
+      };
+
+      const addFloatingText = (text, color, isPlayerSide) => {
+          const id = Date.now() + Math.random();
+          const x = isPlayerSide ? '20%' : '70%';
+          const y = isPlayerSide ? '70%' : '30%';
+          setFloatingTexts(prev => [...prev, { id, text, color, x, y }]);
       };
 
       const drawHand = (deck) => {
@@ -621,7 +673,8 @@
           return hand.sort(()=>Math.random()-0.5);
       };
 
-      const startMatch = (playerRole) => {
+      const startMatch = () => {
+        const playerRole = profile.activeRole || 'Frisk';
         const aiRole = playerRole === 'Frisk' ? 'Sans' : 'Frisk';
         const info = getLevelInfo(profile.exp);
         
@@ -638,7 +691,7 @@
           id: 'solo', isSolo: true, status: 'playing', turn: user.uid, round: 1, spareAttempts: 0,
           p1, p2, log: [`* Encountered ${aiRole}!`], minigame: null
         };
-        setMatch(m); setView('battle'); setSubView('');
+        setMatch(m); setView('battle');
       };
 
       const handleGameEnd = async (didWin, expGain, coinsGain) => {
@@ -647,7 +700,7 @@
         const nCoins = profile.coins + coinsGain;
         await updateProfile({ exp: nExp, coins: nCoins });
         alert(`Match Finished!\n${didWin ? 'YOU WON!' : 'YOU LOST.'}\n+${expGain} EXP\n+${coinsGain} G`);
-        setView('menu'); setMatch(null);
+        setView('menu'); setMatch(null); setFloatingTexts([]);
       };
 
       const applyCard = (m, actorId, cardId, minigameResult = null, extraAction = null) => {
@@ -665,7 +718,11 @@
 
         if(c.cat === 'ITEMS') {
           if(c.healFull) me.hp = me.maxHp;
-          if(c.heal) me.hp = Math.min(me.maxHp, me.hp + c.heal);
+          if(c.heal) {
+              const amount = Math.min(me.maxHp - me.hp, c.heal);
+              me.hp += amount;
+              if(amount>0) addFloatingText(`+${amount}`, 'green', isP1);
+          }
           if(c.st) me.st = Math.min(me.maxSt, me.st + c.st);
           if(c.stFull) me.st = me.maxSt;
           if(c.atkBuff) me.atk += c.atkBuff;
@@ -677,8 +734,15 @@
              if (mult > 0) {
                  const baseDmg = Math.max(1, me.atk - opp.def);
                  const dmg = Math.floor(baseDmg * mult);
-                 opp.hp -= dmg; nm.log.push(`* Dealt ${dmg} damage!`);
-             } else { nm.log.push("* Missed!"); }
+                 opp.hp -= dmg; 
+                 nm.log.push(`* Dealt ${dmg} damage!`);
+                 addFloatingText(`-${dmg}`, mult > 1 ? 'yellow' : 'red', !isP1);
+                 document.body.classList.add('flash-red-anim');
+                 setTimeout(()=>document.body.classList.remove('flash-red-anim'), 400);
+             } else { 
+                 nm.log.push("* Missed!"); 
+                 addFloatingText("MISS", 'gray', !isP1);
+             }
           }
           if(c.id === 'f_act') { 
               if (extraAction === 'Check') { nm.log.push(`* ${opp.role}: ATK ${opp.atk} DEF ${opp.def}`); }
@@ -690,7 +754,7 @@
                  nm.status = 'finished'; nm.winner = actorId; nm.log.push("* Mercy accepted! You Spared them."); 
              } else { nm.log.push("* Mercy failed... try weakening them or persisting."); }
           }
-          if(c.id === 's_nap') { me.hp = me.maxHp; nm.log.push("* Took a nap. HP restored."); }
+          if(c.id === 's_nap') { me.hp = me.maxHp; nm.log.push("* Took a nap. HP restored."); addFloatingText("Zzz...", 'gray', isP1); }
         }
 
         if(c.cat === 'MAGIC') {
@@ -732,7 +796,7 @@
         if(nm.isSolo) {
            if(nm.status === 'finished') {
              const won = nm.winner === user.uid;
-             setTimeout(() => handleGameEnd(won, won ? 25 : 5, won ? 15 : 2), 1000);
+             setTimeout(() => handleGameEnd(won, won ? 25 : 5, won ? 15 : 2), 1500);
            } else if (nm.turn === 'ai' && !nm.minigame) {
              setTimeout(() => runAI(nm), 1200);
            }
@@ -743,42 +807,33 @@
         if(m.status !== 'playing') return;
         const ai = m.p2;
         let choice = ai.hand.find(c => CARDS[c].cat === 'MAGIC' && ai.st >= CARDS[c].cost);
-        if(!choice && ai.st < 30) choice = ai.hand.find(c => CARDS[c].cat === 'ITEMS' && CARDS[c].cost <= ai.st);
+        if(!choice && ai.st < 30 && ai.hp < ai.maxHp) choice = ai.hand.find(c => CARDS[c].cat === 'ITEMS' && CARDS[c].cost <= ai.st);
         if(!choice) choice = ai.hand[0];
 
         const nm = applyCard(m, 'ai', choice);
         updateMatchState(nm);
       };
 
-      if (!user || !profile) return React.createElement("div", {className: "p-8 text-center text-3xl mt-20"}, "LOADING DETERMINATION...");
+      if (!user || !profile) return React.createElement("div", {className: "p-8 text-center text-4xl mt-32 blinking"}, "LOADING DETERMINATION...");
 
       const info = getLevelInfo(profile.exp);
 
       // --- MENU VIEW ---
       if (view === 'menu') {
-        return React.createElement("div", { className: "max-w-3xl mx-auto p-4 flex flex-col items-center min-h-screen justify-center gap-6" },
-          React.createElement("h1", { className: "text-5xl md:text-7xl lg:text-8xl text-center mb-8", style: { letterSpacing: '4px' } }, "UNDERCARDS"),
+        return React.createElement("div", { className: "max-w-4xl mx-auto p-4 flex flex-col items-center min-h-screen justify-center gap-10" },
+          React.createElement("h1", { className: "text-6xl md:text-8xl lg:text-9xl text-center mb-4 font-bold", style: { letterSpacing: '6px', textShadow: '4px 4px 0 #000' } }, "UNDERCARDS"),
           
-          subView === '' && React.createElement(React.Fragment, null,
-              React.createElement("div", { className: "text-2xl md:text-3xl text-left w-full max-w-sm mb-4 leading-relaxed" },
-                React.createElement("div", null, `LOVE: ${info.lv}`),
-                React.createElement("div", null, `EXP:  ${profile.exp}`),
-                React.createElement("div", null, `NEXT: ${info.next}`),
-                React.createElement("div", { className: "text-yellow-400 mt-2" }, `${profile.coins} G`)
-              ),
-              React.createElement("div", { className: "flex flex-col gap-4 w-full max-w-sm ml-0 md:ml-8" },
-                React.createElement("button", { className: "ut-menu-btn", onClick: () => setSubView('charSelect') }, "PLAY OFFLINE"),
-                React.createElement("button", { className: "ut-menu-btn", onClick: () => alert("Online mode is currently under construction by dog.") }, "PLAY ONLINE"),
-                React.createElement("button", { className: "ut-menu-btn", onClick: () => { setView('shop'); setShopView('main'); setShopRawDialogue("yeah.\nwhat d'ya wanna buy?"); } }, "SANS'S SHOP")
-              )
+          React.createElement("div", { className: "text-2xl md:text-4xl text-left w-full max-w-md mb-4 leading-relaxed bg-black/50 p-6 border-4 border-white", style:{boxShadow: '8px 8px 0 rgba(0,0,0,0.5)'} },
+            React.createElement("div", null, `LOVE: ${info.lv}`),
+            React.createElement("div", null, `EXP:  ${profile.exp}`),
+            React.createElement("div", null, `NEXT: ${info.next}`),
+            React.createElement("div", { className: "text-yellow-400 mt-4" }, `${profile.coins} G`)
           ),
-          subView === 'charSelect' && React.createElement(React.Fragment, null,
-              React.createElement("h2", { className: "text-3xl md:text-4xl mb-4 text-yellow-400 text-center" }, "CHOOSE YOUR CHARACTER"),
-              React.createElement("div", { className: "flex flex-col gap-4 w-full max-w-sm mx-auto pl-4" },
-                  React.createElement("button", { className: "ut-menu-btn", onClick: () => startMatch('Frisk') }, "PLAY AS FRISK"),
-                  React.createElement("button", { className: "ut-menu-btn", onClick: () => startMatch('Sans') }, "PLAY AS SANS"),
-                  React.createElement("button", { className: "ut-menu-btn text-gray-500", onClick: () => setSubView('') }, "BACK")
-              )
+          
+          React.createElement("div", { className: "flex flex-col gap-6 w-full max-w-md ml-0 md:ml-12" },
+            React.createElement("button", { className: "ut-menu-btn", onClick: () => startMatch() }, "PLAY OFFLINE"),
+            React.createElement("button", { className: "ut-menu-btn text-gray-500 line-through", onClick: () => {} }, "PLAY ONLINE"),
+            React.createElement("button", { className: "ut-menu-btn", onClick: () => { setView('shop'); setShopView('main'); setShopRawDialogue("yeah.\nwhat d'ya wanna buy?"); } }, "SANS'S SHOP")
           )
         );
       }
@@ -786,9 +841,22 @@
       // --- SHOP VIEW ---
       if (view === 'shop') {
         const seed = Math.floor(Date.now() / 86400000);
-        const magics = Object.keys(CARDS).filter(k => CARDS[k].cat === 'MAGIC' || CARDS[k].rarity === 'rare');
-        const items = Object.keys(CARDS).filter(k => CARDS[k].cat === 'ITEMS' && CARDS[k].rarity !== 'rare');
-        const shopCards = [ magics[seed % magics.length], items[(seed+1) % items.length], items[(seed+2) % items.length] ];
+        
+        // Filter out owned items and items currently in decks, or default basics.
+        const unownedMagics = Object.keys(CARDS).filter(k => CARDS[k].cat === 'MAGIC' && !profile.inventory.includes(k) && !DEFAULT_DECK.Sans.includes(k));
+        const unownedItems = Object.keys(CARDS).filter(k => CARDS[k].cat === 'ITEMS' && !profile.inventory.includes(k) && !DEFAULT_DECK.Frisk.includes(k) && !DEFAULT_DECK.Sans.includes(k));
+        
+        const shopCards = [];
+        // Magic Slot
+        if (unownedMagics.length > 0) shopCards.push(unownedMagics[seed % unownedMagics.length]);
+        else shopCards.push('s_fries'); // Consumable fallback
+        
+        // Item Slots
+        if (unownedItems.length > 0) shopCards.push(unownedItems[(seed + 1) % unownedItems.length]);
+        else shopCards.push('f_candy');
+        
+        if (unownedItems.length > 1) shopCards.push(unownedItems[(seed + 2) % unownedItems.length]);
+        else shopCards.push('f_donut');
 
         const buyCard = (cid) => {
           if(profile.coins >= 50 && !profile.inventory.includes(cid)) {
@@ -810,15 +878,26 @@
            updateProfile({ [deckKey]: curDeck });
         };
 
-        return React.createElement("div", { className: "shop-scene p-2 md:p-4" },
+        return React.createElement("div", { className: "shop-scene p-2 md:p-6" },
           React.createElement("div", { className: "shop-bg" },
-             React.createElement("svg", { width:"180", height:"150", viewBox:"0 0 100 100", style:{ marginBottom: '-4px'}, className: "md:w-64 md:h-48" },
-                React.createElement("path", { d:"M 15 100 Q 20 60 50 60 Q 80 60 85 100 Z", fill:"#111", stroke:"white", strokeWidth:"2" }),
-                React.createElement("path", { d:"M 35 100 L 40 70 Q 50 65 60 70 L 65 100 Z", fill:"white" }),
-                React.createElement("path", { d:"M 30 65 C 30 25, 70 25, 70 65 C 70 75, 30 75, 30 65 Z", fill:"white", stroke:"black", strokeWidth:"2" }),
-                React.createElement("ellipse", { cx:40, cy:45, rx:6, ry:8, fill:"black" }),
-                React.createElement("ellipse", { cx:60, cy:45, rx:6, ry:8, fill:"black" }),
-                React.createElement("path", { d:"M 35 60 Q 50 65 65 60 L 65 65 Q 50 70 35 65 Z", fill:"black" })
+             // Beautiful Custom SVG Sans
+             React.createElement("svg", { width:"200", height:"200", viewBox:"0 0 100 100", style:{ marginBottom: '-4px'}, className: "md:w-72 md:h-72" },
+                // Hoodie
+                React.createElement("path", { d:"M 20 100 Q 20 60 50 60 Q 80 60 80 100", fill:"#1e3a8a", stroke:"black", strokeWidth:"2" }),
+                // Fluff
+                React.createElement("path", { d:"M 25 65 Q 50 55 75 65 Q 85 80 75 80 Q 50 70 25 80 Q 15 80 25 65", fill:"#cbd5e1", stroke:"black", strokeWidth:"1" }),
+                // Skull
+                React.createElement("circle", { cx:"50", cy:"40", r:"22", fill:"white", stroke:"black", strokeWidth:"2" }),
+                React.createElement("path", { d:"M 38 60 L 62 60 L 60 70 L 40 70 Z", fill:"white", stroke:"black", strokeWidth:"2" }),
+                // Eyes
+                React.createElement("ellipse", { cx:"42", cy:"40", rx:"6", ry:"8", fill:"black" }),
+                React.createElement("ellipse", { cx:"58", cy:"40", rx:"6", ry:"8", fill:"black" }),
+                // Pupils (Animated)
+                React.createElement("circle", { cx:"41", cy:"40", r:"2.5", fill:"white", className:"sans-pupil" }),
+                React.createElement("circle", { cx:"57", cy:"40", r:"2.5", fill:"white", className:"sans-pupil" }),
+                // Smile
+                React.createElement("path", { d:"M 38 65 Q 50 70 62 65", fill:"none", stroke:"black", strokeWidth:"2" }),
+                React.createElement("path", { d:"M 42 63 L 42 67 M 46 64 L 46 68 M 50 65 L 50 69 M 54 64 L 54 68 M 58 63 L 58 67", stroke:"black", strokeWidth:"1.5" })
              ),
              React.createElement("div", { className: "shop-counter" })
           ),
@@ -826,41 +905,54 @@
           React.createElement("div", { className: "shop-dialogue-box" },
             React.createElement("div", { className: "shop-text-area" }, shopDialogue),
             React.createElement("div", { className: "shop-options-area" },
-               React.createElement("button", { className: "ut-menu-btn text-xl md:text-3xl", onClick: () => { setShopView('daily'); setShopRawDialogue("new stuff every day.\nsupposedly."); } }, "Daily"),
-               React.createElement("button", { className: "ut-menu-btn text-xl md:text-3xl", onClick: () => { setShopView('item'); setShopRawDialogue("arrange your cards here."); } }, "Item"),
-               React.createElement("button", { className: "ut-menu-btn text-xl md:text-3xl", onClick: () => { setShopView('talk'); setShopRawDialogue("what's on your mind?"); } }, "Talk"),
-               React.createElement("button", { className: "ut-menu-btn text-xl md:text-3xl text-red-400", onClick: () => setView('menu') }, "Exit")
+               React.createElement("button", { className: "ut-menu-btn text-2xl md:text-4xl", onClick: () => { setShopView('daily'); setShopRawDialogue("new stuff every day.\nsupposedly."); } }, "Daily"),
+               React.createElement("button", { className: "ut-menu-btn text-2xl md:text-4xl", onClick: () => { setShopView('item'); setShopRawDialogue("arrange your cards here."); } }, "Item"),
+               React.createElement("button", { className: "ut-menu-btn text-2xl md:text-4xl", onClick: () => { setShopView('talk'); setShopRawDialogue("what's on your mind?"); } }, "Talk"),
+               React.createElement("button", { className: "ut-menu-btn text-2xl md:text-4xl text-red-400", onClick: () => setView('menu') }, "Exit")
             )
           ),
 
           React.createElement("div", { className: "flex-grow p-4 bg-black border-4 border-t-0 border-white overflow-hidden flex flex-col" },
-             shopView === 'daily' && React.createElement("div", { className: "flex flex-wrap justify-center gap-4 mt-2" },
-                shopCards.map(cid => {
+             shopView === 'daily' && React.createElement("div", { className: "flex flex-wrap justify-center gap-6 mt-4" },
+                shopCards.map((cid, idx) => {
                   const owned = profile.inventory.includes(cid);
-                  return React.createElement("div", { key: cid, className: "flex flex-col items-center gap-2" },
+                  return React.createElement("div", { key: cid + idx, className: "flex flex-col items-center gap-3" },
                     React.createElement(Card, { cardId: cid, disabled: owned }),
-                    React.createElement("button", { className: "ut-action-btn w-full mt-2 text-sm md:text-xl", disabled: owned || profile.coins<50, onClick: () => buyCard(cid) }, owned ? "SOLD" : "50G")
+                    React.createElement("button", { className: "ut-action-btn w-full mt-2", disabled: owned || profile.coins<50, onClick: () => buyCard(cid) }, owned ? "SOLD" : "50G")
                   );
                 })
              ),
              shopView === 'item' && React.createElement("div", {className: "overflow-y-auto flex-grow p-2"},
+                React.createElement("div", { className: "mb-8 pb-4 border-b-4 border-white flex flex-col items-center gap-4" },
+                    React.createElement("h3", {className: "text-2xl text-yellow-400"}, "CURRENT ACTIVE HERO:"),
+                    React.createElement("div", { className: "flex gap-6" },
+                       React.createElement("button", { 
+                           className: `ut-action-btn ${profile.activeRole==='Frisk' ? 'bg-white text-black' : ''}`, 
+                           onClick: () => updateProfile({activeRole: 'Frisk'}) 
+                       }, "FRISK"),
+                       React.createElement("button", { 
+                           className: `ut-action-btn ${profile.activeRole==='Sans' ? 'bg-white text-black' : ''}`, 
+                           onClick: () => updateProfile({activeRole: 'Sans'}) 
+                       }, "SANS")
+                    )
+                ),
                 ['Frisk', 'Sans'].map(role => {
                     const all = Object.keys(CARDS).filter(c => profile.inventory.includes(c) || DEFAULT_DECK['Frisk'].includes(c) || DEFAULT_DECK['Sans'].includes(c));
                     const roleCards = all.filter(c => CARDS[c].role === role);
                     return React.createElement("div", {key:role},
-                        React.createElement("h3", {className:`mb-4 text-xl md:text-2xl ${role==='Frisk'?'text-yellow-400':'text-blue-400'}`}, `${role} Deck (4-6 cards):`),
-                        React.createElement("div", {className:"flex gap-2 md:gap-4 flex-wrap mb-8"}, 
+                        React.createElement("h3", {className:`mb-4 text-2xl md:text-3xl font-bold ${role==='Frisk'?'text-yellow-400':'text-blue-400'}`}, `${role} Deck (4-6):`),
+                        React.createElement("div", {className:"flex gap-4 md:gap-6 flex-wrap mb-10 justify-center md:justify-start"}, 
                             roleCards.map(c => React.createElement(Card, {key:c, cardId:c, isActiveInDeck:profile[`deck${role}`].includes(c), onClick:()=>toggleDeck(c, role)}))
                         )
                     );
                 })
              ),
-             shopView === 'talk' && React.createElement("div", {className: "flex flex-col gap-4 mt-4 md:ml-8 overflow-y-auto"},
+             shopView === 'talk' && React.createElement("div", {className: "flex flex-col gap-6 mt-6 md:ml-10 overflow-y-auto"},
                 [
                     {q:"Who are you?", a:"i'm sans.\nsans the skeleton."},
                     {q:"How did you get here?", a:"i know some shortcuts."},
                     {q:"What is this place?", a:"it's a card shop.\nobviously."}
-                ].map((t,i) => React.createElement("button", { key:i, className:"ut-menu-btn text-xl md:text-2xl", onClick:()=>setShopRawDialogue(t.a)}, t.q))
+                ].map((t,i) => React.createElement("button", { key:i, className:"ut-menu-btn text-2xl md:text-4xl", onClick:()=>setShopRawDialogue(t.a)}, t.q))
              )
           )
         );
@@ -874,59 +966,69 @@
         const opp = isP1 ? match.p2 : match.p1;
         const isMyTurn = match.status === 'playing' && match.turn === user.uid && !match.minigame;
 
-        return React.createElement("div", { className: `w-full max-w-4xl mx-auto p-2 md:p-4 h-screen flex flex-col justify-between ${match.status==='finished'?'opacity-50':''}` },
+        return React.createElement("div", { className: `w-full max-w-5xl mx-auto p-3 md:p-6 h-screen flex flex-col justify-between ${match.status==='finished'?'opacity-50':''}` },
           
-          // Opponent Info
-          React.createElement("div", { className: "flex justify-between items-center mb-2 px-2 md:px-4" },
-             React.createElement("div", { className: "text-2xl md:text-4xl uppercase font-bold" }, opp.role),
-             React.createElement("div", { className: "flex items-center gap-2 md:gap-4 w-1/2" },
-               React.createElement("div", { className: "text-red-500 font-bold text-xl md:text-2xl" }, "HP"),
+          floatingTexts.map(ft => React.createElement(FloatingText, { key: ft.id, text: ft.text, color: ft.color, x: ft.x, y: ft.y, onComplete: () => setFloatingTexts(prev=>prev.filter(t=>t.id!==ft.id)) })),
+
+          // Header HUD
+          React.createElement("div", { className: "hud-container p-4 flex justify-between items-center mb-4" },
+             React.createElement("div", { className: "text-3xl md:text-5xl uppercase font-bold" }, opp.role),
+             React.createElement("div", { className: "flex items-center gap-3 md:gap-6 w-1/2 max-w-md" },
+               React.createElement("div", { className: "text-red-500 font-bold text-2xl md:text-3xl" }, "HP"),
                React.createElement("div", { className: "bar-bg flex-grow" }, React.createElement("div", { className: "bar-fill-hp bg-red-500", style: { width: `${(opp.hp/opp.maxHp)*100}%` } })),
-               React.createElement("div", { className: "text-xl md:text-2xl" }, `${opp.hp}`)
+               React.createElement("div", { className: "text-2xl md:text-3xl" }, `${opp.hp}`)
              )
           ),
 
-          // Main Center Box
-          React.createElement("div", { className: "ut-panel flex-grow mb-4 flex flex-col justify-between border-4 md:border-[6px] overflow-hidden" },
-             React.createElement("div", { className: "flex-grow overflow-y-auto flex flex-col-reverse p-2 md:p-6 text-xl md:text-2xl leading-relaxed" },
-               [...match.log].reverse().map((l, i) => React.createElement("div", { key: i, className: "mb-3" }, l))
+          // Main Dialogue Box
+          React.createElement("div", { className: "ut-panel flex-grow mb-6 flex flex-col justify-between overflow-hidden" },
+             React.createElement("div", { className: "flex-grow overflow-y-auto flex flex-col-reverse p-4 md:p-8 text-2xl md:text-4xl leading-relaxed" },
+               [...match.log].reverse().map((l, i) => React.createElement("div", { key: i, className: "mb-4" }, l))
              ),
-             actSubMenu && React.createElement("div", { className: "flex flex-wrap justify-around border-t-4 border-white p-2 md:p-4 gap-2" },
+             actSubMenu && React.createElement("div", { className: "flex flex-wrap justify-around border-t-4 border-white p-4 gap-4 bg-black/80" },
                 React.createElement("button", { className: "ut-action-btn", onClick:()=>handleActChoice('Check')}, "Check"),
                 React.createElement("button", { className: "ut-action-btn", onClick:()=>handleActChoice('Talk')}, "Talk"),
                 React.createElement("button", { className: "ut-action-btn text-red-400 border-red-400", onClick:()=>setActSubMenu(false)}, "Cancel")
              )
           ),
 
-          // Player Stats Bottom
-          React.createElement("div", { className: "flex justify-between items-center mb-4 px-2 md:px-4" },
-             React.createElement("div", { className: "text-2xl md:text-4xl uppercase font-bold" }, `${me.role}   LV ${me.role==='Frisk' ? info.lv : 1}`),
-             React.createElement("div", { className: "flex gap-2 md:gap-4 items-center w-1/2" }, 
-               React.createElement("span", { className: "text-xl md:text-2xl" }, "HP"),
+          // Player Stats HUD
+          React.createElement("div", { className: "hud-container p-4 flex justify-between items-center mb-6" },
+             React.createElement("div", { className: "text-3xl md:text-5xl uppercase font-bold text-yellow-400 text-shadow" }, `${me.role} LV ${me.role==='Frisk' ? info.lv : 1}`),
+             React.createElement("div", { className: "flex gap-3 md:gap-6 items-center w-1/2 max-w-md" }, 
+               React.createElement("span", { className: "text-2xl md:text-3xl font-bold" }, "HP"),
                React.createElement("div", { className: "bar-bg w-full" }, React.createElement("div", { className: "bar-fill-hp", style: { width: `${(me.hp/me.maxHp)*100}%` } })),
-               React.createElement("span", { className: "text-xl md:text-2xl" }, `${me.hp}/${me.maxHp}`)
+               React.createElement("span", { className: "text-2xl md:text-3xl" }, `${me.hp}/${me.maxHp}`)
              )
           ),
 
-          // Hand (3 cards max)
-          React.createElement("div", { className: "flex gap-2 md:gap-8 justify-center pb-2 md:pb-4 flex-wrap" },
+          // Hand
+          React.createElement("div", { className: "flex gap-4 md:gap-10 justify-center pb-4 flex-wrap" },
              me.hand.map((cid, i) => React.createElement(Card, { 
-               key: i, cardId: cid, 
+               key: i + cid, cardId: cid, 
                disabled: !isMyTurn || (CARDS[cid].cost && me.st < CARDS[cid].cost),
                onClick: () => handlePlayCard(cid) 
              }))
           ),
 
+          // Minigames Rendering
           match.pendingFight && React.createElement(FightMinigame, { onComplete: (m) => {
               const nm = applyCard(match, user.uid, match.pendingFight, m);
               nm.pendingFight = null; updateMatchState(nm);
           }}),
+          
           match.minigame && match.minigame.target === user.uid && React.createElement(DodgeMinigame, { 
               pattern: match.minigame.pattern, 
               targetIsAI: false,
               onComplete: (hits) => {
                   const nm = JSON.parse(JSON.stringify(match));
-                  if(hits > 0) { nm.p1.hp -= hits * 2; nm.log.push(`* Took ${hits*2} damage.`); }
+                  if(hits > 0) { 
+                      nm.p1.hp -= hits * 2; 
+                      nm.log.push(`* Took ${hits*2} damage.`); 
+                      addFloatingText(`-${hits*2}`, 'red', true);
+                      document.body.classList.add('flash-red-anim');
+                      setTimeout(()=>document.body.classList.remove('flash-red-anim'), 400);
+                  }
                   else nm.log.push("* Dodged perfectly!");
                   nm.minigame = null; nm.turn = user.uid; nm.round++;
                   nm.p1.st = Math.min(nm.p1.maxSt, nm.p1.st + 5);
@@ -935,13 +1037,18 @@
                   updateMatchState(nm);
               } 
           }),
+          
           match.minigame && match.minigame.target === 'ai' && React.createElement(DodgeMinigame, { 
               pattern: match.minigame.pattern, 
               targetIsAI: true,
               onComplete: (hits) => {
                   const nm = JSON.parse(JSON.stringify(match));
-                  if(hits > 0) { nm.p2.hp -= hits * 2; nm.log.push(`* Sans took ${hits*2} damage!`); }
-                  else nm.log.push("* Sans dodged it easily.");
+                  if(hits > 0) { 
+                      nm.p2.hp -= hits * 2; 
+                      nm.log.push(`* ${nm.p2.role} took ${hits*2} damage!`); 
+                      addFloatingText(`-${hits*2}`, 'yellow', false);
+                  }
+                  else nm.log.push(`* ${nm.p2.role} dodged it easily.`);
                   nm.minigame = null; nm.turn = 'ai'; nm.round++;
                   nm.p2.st = Math.min(nm.p2.maxSt, nm.p2.st + 5);
                   nm.p2.hand = drawHand(nm.p2.deck);
@@ -959,7 +1066,6 @@
     root.render(React.createElement(App));
   };
 
-  // Safe Injectors for execution environments
   const _fbConfig = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
   const _appId = typeof __app_id !== 'undefined' ? __app_id : 'undertale-duel-1';
   const _initToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
