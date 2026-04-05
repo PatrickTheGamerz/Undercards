@@ -19,6 +19,7 @@
     --ut-yellow: #ffff00;
     --ut-green: #00ff00;
     --ut-blue: #00a2e8;
+    --ut-cyan: #00ffff;
     --ut-purple: #a855f7;
     --ut-gray: #aaaaaa;
   }
@@ -33,18 +34,6 @@
     -webkit-touch-callout: none;
     overflow-x: hidden;
     image-rendering: pixelated;
-  }
-
-  /* Crisp CRT Scanline Overlay */
-  body::after {
-    content: " ";
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-    z-index: 999;
-    background-size: 100% 4px;
-    pointer-events: none;
   }
 
   .ut-panel {
@@ -147,10 +136,15 @@
   .damage-text { position: absolute; font-weight: bold; text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; animation: floatUpFade 1s ease-out forwards; z-index: 100; pointer-events: none; }
 
   @keyframes fireBeam {
-    0% { width: 0; opacity: 0; transform: scaleY(0.1); }
-    15% { width: 100%; opacity: 1; background: white; transform: scaleY(1.5); }
-    40% { background: var(--ut-blue); transform: scaleY(1); }
-    100% { opacity: 0; width: 100%; transform: scaleY(0.5); }
+    0% { transform: scaleY(0.1); opacity: 0.8; background: white; }
+    20% { transform: scaleY(1.2); opacity: 1; background: white; }
+    40% { transform: scaleY(1); background: var(--ut-cyan); box-shadow: 0 0 20px var(--ut-cyan); }
+    100% { transform: scaleY(0.1); opacity: 0; background: var(--ut-cyan); }
+  }
+  
+  @keyframes blasterAppear {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
   }
 
   /* Minigames */
@@ -167,18 +161,28 @@
     overflow: hidden;
     background: black;
     margin-bottom: 10px;
-    box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
   }
   
   .soul {
     position: absolute; width: 18px; height: 18px;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 28s-12-9-12-16c0-4 4-7 8-7 2 0 4 2 4 2s2-2 4-2c4 0 8 3 8 7 0 7-12 16-12 16z" fill="%23ff0000" stroke="white" stroke-width="1"/></svg>') no-repeat center;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 28s-12-9-12-16c0-4 4-7 8-7 2 0 4 2 4 2s2-2 4-2c4 0 8 3 8 7 0 7-12 16-12 16z" fill="%23ff0000"/></svg>') no-repeat center;
     background-size: contain; z-index: 10;
-    filter: drop-shadow(0 0 4px red);
   }
   .soul.blue {
     background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 28s-12-9-12-16c0-4 4-7 8-7 2 0 4 2 4 2s2-2 4-2c4 0 8 3 8 7 0 7-12 16-12 16z" fill="%230033cc" stroke="white" stroke-width="1"/></svg>') no-repeat center;
-    filter: drop-shadow(0 0 4px #0033cc);
+    filter: drop-shadow(0 0 2px #0033cc);
+  }
+
+  /* Authentic Bones */
+  .bone-sprite {
+    position: absolute;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  }
+  .bone-knob {
+    width: 100%; height: 6px; border-radius: 4px;
+  }
+  .bone-shaft {
+    width: 60%; height: calc(100% - 12px);
   }
 
   /* Sharpened Fight Bar */
@@ -267,8 +271,8 @@
     's_ketchup': { id: 's_ketchup', name: 'Ketchup', cat: 'ITEMS', desc: 'Full ST.', cost: 0, role: 'Sans', stFull: true, rarity: 'rare' },
     's_fries': { id: 's_fries', name: 'Greasy Fries', cat: 'ITEMS', desc: 'Heal 15 HP, +10 ST.', cost: 0, role: 'Sans', heal: 15, st: 10 },
     // Sans Magic
-    's_bone1': { id: 's_bone1', name: 'Bone Throw', cat: 'MAGIC', desc: 'Basic sliding bones.', cost: 15, role: 'Sans', pattern: 'bones_easy' },
-    's_bone2': { id: 's_bone2', name: 'Bone Jumps', cat: 'MAGIC', desc: 'Blue soul gravity test.', cost: 20, role: 'Sans', pattern: 'blue_bones' },
+    's_bone1': { id: 's_bone1', name: 'Bone Sliders', cat: 'MAGIC', desc: 'Bones sliding from sides.', cost: 15, role: 'Sans', pattern: 'bone_sliders' },
+    's_bone2': { id: 's_bone2', name: 'Blue Bone Jumps', cat: 'MAGIC', desc: 'Varying height bones. Stand still for blue.', cost: 20, role: 'Sans', pattern: 'blue_bones' },
     's_blaster': { id: 's_blaster', name: 'G. Blaster', cat: 'MAGIC', desc: 'Massive beam blasts.', cost: 40, role: 'Sans', pattern: 'blasters', rarity: 'rare' },
   };
 
@@ -422,47 +426,82 @@
         const box = boxRef.current;
         const rect = box.getBoundingClientRect(); 
         let sx = rect.width/2; let sy = rect.height/2;
-        const speed = 280; 
+        let lastSx = sx, lastSy = sy;
+        const speed = 250; 
         let lastTime = performance.now();
-        const duration = pattern === 'blasters' ? 6000 : 5000;
+        const duration = pattern === 'blasters' ? 6500 : 5500;
         let elapsed = 0;
 
         const isBlue = pattern === 'blue_bones';
-        let vy = 0; const gravity = 1500; const jumpPower = -600;
+        let vy = 0; const gravity = 2000; const jumpPower = -700;
         let isGrounded = false;
         if(isBlue) sy = rect.height - 18;
 
+        // Bot AI variables
+        let aiTargetX = sx, aiTargetY = sy;
+        let aiTimer = 0;
+
         const projs = [];
-        const createBone = (x, y, vx, vy, w, h) => {
+        
+        // Custom Authentic Bone Visual Renderer
+        const createBone = (x, y, vx, vy, w, h, isBlueBone = false) => {
           const el = document.createElement('div');
-          el.style.position = 'absolute'; el.style.background = 'white'; el.style.borderRadius = '8px';
-          el.style.border = '2px solid black'; // Clearer visual definition
+          el.className = 'bone-sprite';
           el.style.width = w+'px'; el.style.height = h+'px';
           el.style.left = x+'px'; el.style.top = y+'px';
+          
+          const color = isBlueBone ? 'var(--ut-cyan)' : 'white';
+          const innerHTML = `
+            <div class="bone-knob" style="background:${color};"></div>
+            <div class="bone-shaft" style="background:${color};"></div>
+            <div class="bone-knob" style="background:${color};"></div>
+          `;
+          el.innerHTML = innerHTML;
           box.appendChild(el);
-          projs.push({ el, x, y, vx, vy, w, h, type: 'bone' });
-        };
-        const createBlaster = (x, y, w, h, delay) => {
-          const el = document.createElement('div');
-          el.style.position = 'absolute'; el.style.width = w+'px'; el.style.height = h+'px';
-          el.style.left = x+'px'; el.style.top = y+'px';
-          el.innerHTML = `<svg viewBox="0 0 100 100" style="width:50px; height:50px; margin-left:${w/2-25}px"><path d="M20 20 L80 20 L80 60 L60 80 L40 80 L20 60 Z" fill="white" stroke="black" stroke-width="2"/><circle cx="35" cy="40" r="8" fill="black"/><circle cx="65" cy="40" r="8" fill="black"/></svg>`;
-          box.appendChild(el);
-          projs.push({ el, x, y, vx:0, vy:0, w, h, type: 'blaster', delay, state: 0, time: 0 });
+          projs.push({ el, x, y, vx, vy, w, h, type: 'bone', isBlueBone });
         };
 
-        if (pattern === 'bones_easy') {
-          for(let i=0; i<8; i++) createBone(rect.width + i*100, rect.height - 20 - Math.random()*80, -180 - Math.random()*50, 0, 16, 120);
-        } else if (isBlue) {
+        const createBlaster = (x, y, delay) => {
+          const el = document.createElement('div');
+          el.style.position = 'absolute'; el.style.width = '60px'; el.style.height = '60px';
+          el.style.left = x+'px'; el.style.top = y+'px';
+          el.style.transformOrigin = 'center center';
+          el.style.transform = 'scale(0)';
+          
+          // Authentic Blaster SVG
+          el.innerHTML = `
+            <svg viewBox="0 0 100 100" style="width:100%; height:100%;">
+                <path d="M20 30 Q50 10 80 30 L85 60 Q50 80 15 60 Z" fill="white" stroke="black" stroke-width="2"/>
+                <circle cx="35" cy="45" r="6" fill="black"/>
+                <circle cx="65" cy="45" r="6" fill="black"/>
+                <path d="M40 65 L45 75 L55 75 L60 65" fill="none" stroke="black" stroke-width="3"/>
+                <path d="M10 40 L5 20 M90 40 L95 20" stroke="white" stroke-width="8" stroke-linecap="round"/>
+            </svg>`;
+          box.appendChild(el);
+          projs.push({ el, x, y, type: 'blaster', delay, state: 0, time: 0, cx: x+30, cy: y+30, angle: 0 });
+        };
+
+        if (pattern === 'bone_sliders') {
           for(let i=0; i<12; i++) {
-              const h = 30 + Math.random()*70;
-              createBone(rect.width + i*130, rect.height - h, -250, 0, 18, h);
+              const fromRight = Math.random() > 0.5;
+              const yPos = Math.random() * (rect.height - 40);
+              createBone(fromRight ? rect.width + 50 : -50, yPos, fromRight ? -180 : 180, 0, 14, 40 + Math.random()*40, false);
+          }
+        } else if (isBlue) {
+          let currentX = rect.width + 50;
+          for(let i=0; i<15; i++) {
+              const isBlueB = Math.random() > 0.6;
+              const h = isBlueB ? 100 : 20 + Math.random()*80; // Blue bones are taller to force standing
+              createBone(currentX, rect.height - h, -220, 0, 16, h, isBlueB);
+              currentX += 80 + Math.random()*60;
           }
         } else if (pattern === 'blasters') {
-          for(let i=0; i<4; i++) createBlaster(0, Math.random()*(rect.height-50), rect.width, 60, i*1.2);
+          for(let i=0; i<5; i++) {
+              const bx = Math.random() > 0.5 ? -30 : rect.width - 30;
+              const by = Math.random() * (rect.height - 60);
+              createBlaster(bx, by, 0.5 + i*1.0);
+          }
         }
-
-        const rectOverlap = (x1,y1,w1,h1, x2,y2,w2,h2) => { return x1 < x2+w2 && x1+w1 > x2 && y1 < y2+h2 && y1+h1 > y2; };
 
         const takeHit = () => {
           if(isInvuln.current) return;
@@ -473,22 +512,46 @@
           setTimeout(() => { isInvuln.current = false; if(soulRef.current) soulRef.current.style.opacity = 1; }, 800);
         };
 
+        const checkBlasterHit = (sx, sy, p) => {
+            if (p.state !== 2) return false;
+            // Beam origin is slightly in front of the skull center
+            let bx = p.cx + Math.cos(p.angle) * 20;
+            let by = p.cy + Math.sin(p.angle) * 20;
+            
+            let dx = (sx + 9) - bx; 
+            let dy = (sy + 9) - by;
+            
+            let cos = Math.cos(-p.angle);
+            let sin = Math.sin(-p.angle);
+            let rx = dx * cos - dy * sin; // Dist along beam
+            let ry = dx * sin + dy * cos; // Dist from center line
+            
+            return (rx > 0 && rx < 1000 && Math.abs(ry) < 25);
+        };
+
         const loop = (time) => {
           const bRect = box.getBoundingClientRect(); 
           const dt = Math.min(0.05, (time - lastTime) / 1000);
           lastTime = time; elapsed += dt * 1000;
+
+          lastSx = sx; lastSy = sy;
 
           const dx = (keys.d || touch.r) - (keys.a || touch.l);
           sx += dx * speed * dt;
 
           if (isBlue) {
               if (targetIsAI) {
-                  const incoming = projs.find(p => p.type === 'bone' && p.x > sx && p.x - sx < 120);
-                  if (incoming && isGrounded) { vy = jumpPower; isGrounded = false; }
+                  aiTimer -= dt;
+                  if(aiTimer <= 0) {
+                      const incoming = projs.find(p => p.type === 'bone' && p.x > sx && p.x - sx < 150);
+                      if (incoming && incoming.isBlueBone) { aiTargetY = bRect.height - 18; } // Stay still
+                      else if (incoming && !incoming.isBlueBone && isGrounded) { vy = jumpPower * (0.8 + Math.random()*0.4); isGrounded = false; }
+                      aiTimer = 0.2;
+                  }
               } else {
                   const wantJump = keys.w || keys.z || touch.u || touch.z;
                   if (wantJump && isGrounded) { vy = jumpPower; isGrounded = false; }
-                  else if (!wantJump && vy < 0) { vy *= 0.6; } // Variable jump
+                  else if (!wantJump && vy < 0) { vy *= 0.8; } 
               }
               sy += vy * dt; vy += gravity * dt;
               const floor = bRect.height - 18;
@@ -498,35 +561,70 @@
               sy += dy * speed * dt;
               
               if(targetIsAI) {
-                  const incoming = projs[0];
-                  if(incoming) {
-                      const targetY = (incoming.y > sy) ? 0 : bRect.height - 18;
-                      sy += (targetY - sy) * 3 * dt; 
+                  aiTimer -= dt;
+                  if (aiTimer <= 0) {
+                      // Wandering / Avoiding AI
+                      aiTargetX = sx + (Math.random() - 0.5) * 100;
+                      aiTargetY = sy + (Math.random() - 0.5) * 100;
+                      
+                      const threat = projs.find(p => {
+                          if(p.type === 'blaster' && p.state === 1) return true;
+                          if(p.type === 'bone' && Math.abs(p.y - sy) < 30) return true;
+                          return false;
+                      });
+                      if(threat) {
+                          aiTargetY = threat.y > bRect.height/2 ? 10 : bRect.height - 30; 
+                      }
+                      aiTimer = 0.3 + Math.random() * 0.4;
                   }
+                  
+                  sx += (aiTargetX - sx) * 3 * dt;
+                  sy += (aiTargetY - sy) * 3 * dt;
               }
           }
 
           sx = Math.max(0, Math.min(bRect.width - 18, sx));
           sy = Math.max(0, Math.min(bRect.height - 18, sy));
+          
+          const isMoving = Math.abs(sx - lastSx) > 0.5 || Math.abs(sy - lastSy) > 0.5;
+
           if(soulRef.current) { soulRef.current.style.left = sx + 'px'; soulRef.current.style.top = sy + 'px'; }
 
           projs.forEach(p => {
             if (p.type === 'bone') {
               p.x += p.vx * dt; p.y += p.vy * dt;
               p.el.style.left = p.x + 'px'; p.el.style.top = p.y + 'px';
-              // Tighter collision hitbox
-              if(rectOverlap(sx+2, sy+2, 14, 14, p.x+4, p.y+4, p.w-8, p.h-8)) takeHit();
+              
+              const isOverlapping = (sx+2 < p.x+p.w-2 && sx+16 > p.x+2 && sy+2 < p.y+p.h-2 && sy+16 > p.y+2);
+              if(isOverlapping) {
+                  if(!p.isBlueBone || (p.isBlueBone && isMoving)) takeHit();
+              }
             } else if (p.type === 'blaster') {
               p.time += dt;
-              if (p.state === 0 && p.time > p.delay) { p.state = 1; p.el.style.opacity = 1; }
-              else if (p.state === 1 && p.time > p.delay + 0.8) {
+              
+              if (p.state === 0) {
+                  // Aim at player
+                  if (p.time > p.delay - 0.5) {
+                      p.el.style.animation = 'blasterAppear 0.3s ease-out forwards';
+                      p.angle = Math.atan2((sy+9) - p.cy, (sx+9) - p.cx);
+                      p.el.style.transform = `translate(-50%, -50%) rotate(${p.angle}rad)`;
+                      p.state = 1;
+                  }
+              }
+              else if (p.state === 1 && p.time > p.delay + 0.5) {
                 p.state = 2;
                 const beam = document.createElement('div');
-                beam.style.position = 'absolute'; beam.style.top = '25px'; beam.style.height = '24px'; beam.style.width = '100%';
-                beam.style.animation = 'fireBeam 0.5s ease-out';
+                beam.style.position = 'absolute'; 
+                beam.style.left = '50px'; // start from mouth
+                beam.style.top = '20px';
+                beam.style.height = '20px'; 
+                beam.style.width = '1000px';
+                beam.style.transformOrigin = 'left center';
+                beam.style.animation = 'fireBeam 0.6s ease-out forwards';
                 p.el.appendChild(beam);
-              } else if (p.state === 2) {
-                if (p.time < p.delay + 1.2 && rectOverlap(sx+2, sy+2, 14, 14, p.x, p.y+25, p.w, 24)) takeHit();
+              } 
+              else if (p.state === 2) {
+                if (p.time < p.delay + 1.0 && checkBlasterHit(sx, sy, p)) takeHit();
               }
             }
           });
@@ -590,6 +688,7 @@
       const [view, setView] = useState('menu'); 
       
       const [shopView, setShopView] = useState('main');
+      const [shopDeckTab, setShopDeckTab] = useState('Frisk'); // Track which deck to edit
       const [shopRawDialogue, setShopRawDialogue] = useState("yeah.\nwhat d'ya wanna buy?");
       const shopDialogue = useTypewriter(shopRawDialogue, 30);
       
@@ -877,10 +976,12 @@
            }
            updateProfile({ [deckKey]: curDeck });
         };
+        
+        const isSleeping = shopRawDialogue === "Zzz...";
 
         return React.createElement("div", { className: "shop-scene p-2 md:p-6" },
           React.createElement("div", { className: "shop-bg" },
-             // Beautiful Custom SVG Sans
+             // Beautiful Custom SVG Sans (Awake & Sleeping forms)
              React.createElement("svg", { width:"200", height:"200", viewBox:"0 0 100 100", style:{ marginBottom: '-4px'}, className: "md:w-72 md:h-72" },
                 // Hoodie
                 React.createElement("path", { d:"M 20 100 Q 20 60 50 60 Q 80 60 80 100", fill:"#1e3a8a", stroke:"black", strokeWidth:"2" }),
@@ -889,15 +990,21 @@
                 // Skull
                 React.createElement("circle", { cx:"50", cy:"40", r:"22", fill:"white", stroke:"black", strokeWidth:"2" }),
                 React.createElement("path", { d:"M 38 60 L 62 60 L 60 70 L 40 70 Z", fill:"white", stroke:"black", strokeWidth:"2" }),
-                // Eyes
-                React.createElement("ellipse", { cx:"42", cy:"40", rx:"6", ry:"8", fill:"black" }),
-                React.createElement("ellipse", { cx:"58", cy:"40", rx:"6", ry:"8", fill:"black" }),
-                // Pupils (Animated)
-                React.createElement("circle", { cx:"41", cy:"40", r:"2.5", fill:"white", className:"sans-pupil" }),
-                React.createElement("circle", { cx:"57", cy:"40", r:"2.5", fill:"white", className:"sans-pupil" }),
-                // Smile
-                React.createElement("path", { d:"M 38 65 Q 50 70 62 65", fill:"none", stroke:"black", strokeWidth:"2" }),
-                React.createElement("path", { d:"M 42 63 L 42 67 M 46 64 L 46 68 M 50 65 L 50 69 M 54 64 L 54 68 M 58 63 L 58 67", stroke:"black", strokeWidth:"1.5" })
+                
+                // Eyes & Smile based on Sleep state
+                !isSleeping ? React.createElement(React.Fragment, null,
+                    React.createElement("ellipse", { cx:"42", cy:"40", rx:"6", ry:"8", fill:"black" }),
+                    React.createElement("ellipse", { cx:"58", cy:"40", rx:"6", ry:"8", fill:"black" }),
+                    React.createElement("circle", { cx:"41", cy:"40", r:"2.5", fill:"white", className:"sans-pupil" }),
+                    React.createElement("circle", { cx:"57", cy:"40", r:"2.5", fill:"white", className:"sans-pupil" }),
+                    React.createElement("path", { d:"M 38 65 Q 50 70 62 65", fill:"none", stroke:"black", strokeWidth:"2" }),
+                    React.createElement("path", { d:"M 42 63 L 42 67 M 46 64 L 46 68 M 50 65 L 50 69 M 54 64 L 54 68 M 58 63 L 58 67", stroke:"black", strokeWidth:"1.5" })
+                ) : React.createElement(React.Fragment, null,
+                    React.createElement("path", { d:"M 35 40 Q 42 35 49 40", fill:"none", stroke:"black", strokeWidth:"2" }),
+                    React.createElement("path", { d:"M 51 40 Q 58 35 65 40", fill:"none", stroke:"black", strokeWidth:"2" }),
+                    React.createElement("path", { d:"M 38 66 Q 50 68 62 66", fill:"none", stroke:"black", strokeWidth:"2" }),
+                    React.createElement("text", { x:"70", y:"25", fill:"white", fontSize:"18", fontFamily:"VT323", className:"blinking" }, "Zzz")
+                )
              ),
              React.createElement("div", { className: "shop-counter" })
           ),
@@ -924,34 +1031,33 @@
              ),
              shopView === 'item' && React.createElement("div", {className: "overflow-y-auto flex-grow p-2"},
                 React.createElement("div", { className: "mb-8 pb-4 border-b-4 border-white flex flex-col items-center gap-4" },
-                    React.createElement("h3", {className: "text-2xl text-yellow-400"}, "CURRENT ACTIVE HERO:"),
+                    React.createElement("h3", {className: "text-2xl text-yellow-400"}, "CHOOSE DECK TO EDIT:"),
                     React.createElement("div", { className: "flex gap-6" },
                        React.createElement("button", { 
-                           className: `ut-action-btn ${profile.activeRole==='Frisk' ? 'bg-white text-black' : ''}`, 
-                           onClick: () => updateProfile({activeRole: 'Frisk'}) 
+                           className: `ut-action-btn ${shopDeckTab==='Frisk' ? 'bg-white text-black' : ''}`, 
+                           onClick: () => { setShopDeckTab('Frisk'); updateProfile({activeRole: 'Frisk'}); }
                        }, "FRISK"),
                        React.createElement("button", { 
-                           className: `ut-action-btn ${profile.activeRole==='Sans' ? 'bg-white text-black' : ''}`, 
-                           onClick: () => updateProfile({activeRole: 'Sans'}) 
+                           className: `ut-action-btn ${shopDeckTab==='Sans' ? 'bg-white text-black' : ''}`, 
+                           onClick: () => { setShopDeckTab('Sans'); updateProfile({activeRole: 'Sans'}); }
                        }, "SANS")
                     )
                 ),
-                ['Frisk', 'Sans'].map(role => {
-                    const all = Object.keys(CARDS).filter(c => profile.inventory.includes(c) || DEFAULT_DECK['Frisk'].includes(c) || DEFAULT_DECK['Sans'].includes(c));
-                    const roleCards = all.filter(c => CARDS[c].role === role);
-                    return React.createElement("div", {key:role},
-                        React.createElement("h3", {className:`mb-4 text-2xl md:text-3xl font-bold ${role==='Frisk'?'text-yellow-400':'text-blue-400'}`}, `${role} Deck (4-6):`),
-                        React.createElement("div", {className:"flex gap-4 md:gap-6 flex-wrap mb-10 justify-center md:justify-start"}, 
-                            roleCards.map(c => React.createElement(Card, {key:c, cardId:c, isActiveInDeck:profile[`deck${role}`].includes(c), onClick:()=>toggleDeck(c, role)}))
-                        )
-                    );
-                })
+                React.createElement("div", {key:shopDeckTab},
+                    React.createElement("h3", {className:`mb-4 text-2xl md:text-3xl font-bold ${shopDeckTab==='Frisk'?'text-yellow-400':'text-blue-400'}`}, `${shopDeckTab} Deck (4-6):`),
+                    React.createElement("div", {className:"flex gap-4 md:gap-6 flex-wrap mb-10 justify-center md:justify-start"}, 
+                        Object.keys(CARDS)
+                          .filter(c => CARDS[c].role === shopDeckTab && (profile.inventory.includes(c) || DEFAULT_DECK[shopDeckTab].includes(c)))
+                          .map(c => React.createElement(Card, {key:c, cardId:c, isActiveInDeck:profile[`deck${shopDeckTab}`].includes(c), onClick:()=>toggleDeck(c, shopDeckTab)}))
+                    )
+                )
              ),
              shopView === 'talk' && React.createElement("div", {className: "flex flex-col gap-6 mt-6 md:ml-10 overflow-y-auto"},
                 [
                     {q:"Who are you?", a:"i'm sans.\nsans the skeleton."},
                     {q:"How did you get here?", a:"i know some shortcuts."},
-                    {q:"What is this place?", a:"it's a card shop.\nobviously."}
+                    {q:"What is this place?", a:"it's a card shop.\nobviously."},
+                    {q:"Sleep", a:"Zzz..."}
                 ].map((t,i) => React.createElement("button", { key:i, className:"ut-menu-btn text-2xl md:text-4xl", onClick:()=>setShopRawDialogue(t.a)}, t.q))
              )
           )
